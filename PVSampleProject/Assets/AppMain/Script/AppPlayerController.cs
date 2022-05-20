@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-using UnityEngine.Video;
-
 public class AppPlayerController : MonoBehaviour
 {
     // -------------------------------------------------------------------------
@@ -45,12 +43,6 @@ public class AppPlayerController : MonoBehaviour
     }
     // スマホ入力の値.
     public Vector2? PhoneUiInput{ get; set; } = null;
-    // 回転ロック.
-    public bool IsRotationLock{ get; set; } = true;
-    // 回転用タッチ操作の現在の指ID.
-    public int CurrentRotationFingerId{ get; set; } = -1;
-    // 移動用タッチ操作の現在の指ID.
-    public int CurrentMoveFingerId{ get; set; } = -1;
 
     // 回転入力開始位置.
     Vector3? rotStartPos = null;
@@ -93,130 +85,50 @@ public class AppPlayerController : MonoBehaviour
         FixedUpdateMove( _horizontal, _vertical );   
     }
 
-
-    // ----------------------------------------------------------------------------------------------
+    // ---------------------------------------------------------------------
     /// <summary>
-    /// カメラの回転処理.
+    /// カメラ回転マウスクリック処理.
     /// </summary>
-    // ----------------------------------------------------------------------------------------------
-    public void UpdateCameraRotation( bool isTouch )
-    {        
-        if( IsRotationLock == true ) return;
+    // ---------------------------------------------------------------------
+    public void UpdateClickCameraRotation()
+    {
+        var _pos = Input.mousePosition;
 
-        if( isTouch == false )
+        if( rotStartPos == null )
         {
-            var _pos = Input.mousePosition;
-
-            if( rotStartPos == null )
-            {
-                rotStartPos = Input.mousePosition;
-            }   
-            else
-            {
-                var _rsPos = (Vector3)rotStartPos;
-                var _moveX = _pos.x - _rsPos.x;
-                var _moveY = _pos.y - _rsPos.y;
-
-                // Y軸周りの回転.
-                cameraRootH.Rotate( 0, -_moveX * rotationSpeed * 0.01f, 0 );
-                // X軸周りの回転（90°制限）.
-                var _addValue = _moveY * rotationSpeed * 0.01f;                
-                if( currentEulerRotationV < 90f && currentEulerRotationV > -90f )
-                {
-                    _Add( _addValue );
-                }               
-                else if( currentEulerRotationV >= 90f )
-                {
-                    if( _addValue > 0 ) _Set( 90f );                  
-                    else _Add( _addValue );
-                }
-                else if( currentEulerRotationV <= -90f )
-                {
-                    if( _addValue < 0 ) _Set( -90f );                  
-                    else _Add( _addValue );
-                }
-                else 
-                {
-                    Debug.LogWarning( "CameraRotation Warning @@ " + currentEulerRotationV );
-                }                
-
-                rotStartPos = _pos;  
-            }
-
-            // AppGameManager.Instance.DebugText.text = _pos.ToString();
-        }
+            rotStartPos = Input.mousePosition;
+        }   
         else
         {
-            if( CurrentRotationFingerId < 0 )
+            var _rsPos = (Vector3)rotStartPos;
+            var _moveX = _pos.x - _rsPos.x;
+            var _moveY = _pos.y - _rsPos.y;
+
+            // Y軸周りの回転.
+            cameraRootH.Rotate( 0, -_moveX * rotationSpeed * 0.01f, 0 );
+            // X軸周りの回転（90°制限）.
+            var _addValue = _moveY * rotationSpeed * 0.01f;                
+            if( currentEulerRotationV < 90f && currentEulerRotationV > -90f )
             {
-                Debug.LogWarning( "FingerIdが見つかりません" );
-                return;
+                _Add( _addValue );
+            }               
+            else if( currentEulerRotationV >= 90f )
+            {
+                if( _addValue > 0 ) _Set( 90f );                  
+                else _Add( _addValue );
             }
-
-            Touch? _selectedTouch = null;
-            var _touches = Input.touches;
-            foreach( var t in _touches )
+            else if( currentEulerRotationV <= -90f )
             {
-                if( t.fingerId == CurrentRotationFingerId ) _selectedTouch = t;
+                if( _addValue < 0 ) _Set( -90f );                  
+                else _Add( _addValue );
             }
-
-            if( _selectedTouch == null ) 
+            else 
             {
-                Debug.LogWarning( "タッチしている指の検出に失敗しました。FingerId=" + CurrentRotationFingerId );
-                return;
-            }
-            
-            // 
-            var _touch = (Touch)_selectedTouch;
+                Debug.LogWarning( "CameraRotation Warning @@ " + currentEulerRotationV );
+            }                
 
-            if( rotStartPos == null )
-            {
-                rotStartPos = _touch.position;
-                // AppGameManager.Instance.DebugText.text = _touch.position.ToString();
-            }
-            else
-            {
-                if( _touch.phase != TouchPhase.Moved )
-                {
-                    Debug.Log( _touch.phase + " 一旦回転をリセットします。" );
-                    return;
-                }
-
-                var _rsPos = (Vector3)rotStartPos;
-                var _moveX = _touch.position.x - _rsPos.x;
-                var _moveY = _touch.position.y - _rsPos.y;
-
-                // Y軸周りの回転.
-                cameraRootH.Rotate( 0, -_moveX * rotationSpeed * 0.01f, 0 );
-                // X軸周りの回転（90°制限）.
-                var _addValue = _moveY * rotationSpeed * 0.01f;                
-                if( currentEulerRotationV < 90f && currentEulerRotationV > -90f )
-                {
-                    _Add( _addValue );
-                }               
-                else if( currentEulerRotationV >= 90f )
-                {
-                    if( _addValue > 0 ) _Set( 90f );                  
-                    else _Add( _addValue );
-                }
-                else if( currentEulerRotationV <= -90f )
-                {
-                    if( _addValue < 0 ) _Set( -90f );                  
-                    else _Add( _addValue );
-                }
-                else 
-                {
-                    Debug.LogWarning( "CameraRotation Warning @@ " + currentEulerRotationV );
-                }                
-
-                rotStartPos = _touch.position; 
-                
-                // AppGameManager.Instance.DebugText.text = _rsPos.ToString();
-            }           
-
-            
+            rotStartPos = _pos;  
         }
-
 
         void _Add( float value )
         {
@@ -235,15 +147,90 @@ public class AppPlayerController : MonoBehaviour
         }
     }
 
+    // ---------------------------------------------------------------------
+    /// <summary>
+    /// カメラ回転タッチ処理.
+    /// </summary>
+    /// <param name="touch"> 回転を行うタッチ. </param>
+    // ---------------------------------------------------------------------
+    public void UpdateTouchCameraRotation( Touch touch )
+    {
+        if( rotStartPos == null )
+        {
+            rotStartPos = touch.position;
+        }
+        else
+        {
+            if( touch.phase != TouchPhase.Moved )
+            {
+                Debug.Log( touch.phase + " 一旦回転をリセットします。" );
+                return;
+            }
+
+            var _rsPos = (Vector3)rotStartPos;
+            var _moveX = touch.position.x - _rsPos.x;
+            var _moveY = touch.position.y - _rsPos.y;
+
+            // Y軸周りの回転.
+            cameraRootH.Rotate( 0, -_moveX * rotationSpeed * 0.01f, 0 );
+            // X軸周りの回転（90°制限）.
+            var _addValue = _moveY * rotationSpeed * 0.01f;                
+            if( currentEulerRotationV < 90f && currentEulerRotationV > -90f )
+            {
+                _Add( _addValue );
+            }               
+            else if( currentEulerRotationV >= 90f )
+            {
+                if( _addValue > 0 ) _Set( 90f );                  
+                else _Add( _addValue );
+            }
+            else if( currentEulerRotationV <= -90f )
+            {
+                if( _addValue < 0 ) _Set( -90f );                  
+                else _Add( _addValue );
+            }
+            else 
+            {
+                Debug.LogWarning( "CameraRotation Warning @@ " + currentEulerRotationV );
+            }                
+
+            rotStartPos = touch.position; 
+        }  
+
+        void _Add( float value )
+        {
+            currentEulerRotationV += value;
+            var _currentV = cameraRootV.localEulerAngles;
+            _currentV.x = currentEulerRotationV;
+            cameraRootV.localEulerAngles = _currentV;
+        }
+
+        void _Set( float value )
+        {
+            currentEulerRotationV = value;
+            var _currentV = cameraRootV.localEulerAngles;
+            _currentV.x = currentEulerRotationV;
+            cameraRootV.localEulerAngles = _currentV;
+        }
+    }
+
+    // ---------------------------------------------------------------------
+    /// <summary>
+    /// 回転のための値のリセット.
+    /// </summary>
+    // ---------------------------------------------------------------------
     public void ResetRotationValue()
     {
         rotStartPos = null;
-        IsRotationLock = true;
-        CurrentRotationFingerId = -1;
     }
 
-
-
+    // ---------------------------------------------------------------------
+    /// <summary>
+    /// 移動更新処理.
+    /// </summary>
+    /// <param name="horizontal"> 横入力値. </param>
+    /// <param name="vertical"> 縦入力値. </param>
+    // ---------------------------------------------------------------------
     void FixedUpdateMove( float horizontal, float vertical )
     {
         if( AppGameManager.Instance.CurrentLock.Move == true ) return;
@@ -262,7 +249,11 @@ public class AppPlayerController : MonoBehaviour
 
     }
 
-
+    // ---------------------------------------------------------------------
+    /// <summary>
+    /// 移動抵抗力.
+    /// </summary>
+    // ---------------------------------------------------------------------
     void MoveResistance()
     {
         var _current = Rigid.velocity;
@@ -280,16 +271,23 @@ public class AppPlayerController : MonoBehaviour
         }
     }
 
-    public void TestPointerClicked( UnityEngine.EventSystems.BaseEventData eventData )
-    {
-        Debug.Log( eventData.selectedObject.name + "@@@" );
-    }
-
+    // ---------------------------------------------------------------------
+    /// <summary>
+    /// 移動を強制的に停止.
+    /// </summary>
+    // ---------------------------------------------------------------------
     public void StopPlayer()
     {
         rigid.velocity = Vector3.zero;
         rigid.angularVelocity = Vector3.zero;
     }
+
+
+    public void TestPointerClicked( UnityEngine.EventSystems.BaseEventData eventData )
+    {
+        Debug.Log( eventData.selectedObject.name + "@@@" );
+    }
+
 
 
 

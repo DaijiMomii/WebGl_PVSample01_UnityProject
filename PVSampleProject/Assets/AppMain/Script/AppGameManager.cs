@@ -3,47 +3,84 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Runtime.InteropServices;
+using DG.Tweening;
 
 public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
 {
+    
+    // プラグインインポート端末情報の取得.
     [DllImport("__Internal")]
     private static extern void DeviceInformation();
-
+    // プラグインインポートURLを開く.
     [DllImport("__Internal")]
     private static extern void OpenUrl( string url );
 
 
-
+    // -------------------------------------------------------------------------------------
+    /// <summary>
+    /// マウスアクション.
+    /// </summary>
+    // -------------------------------------------------------------------------------------
     public enum MouseAction
     {
         Down, Hold, Up,
     }
 
+    // -------------------------------------------------------------------------------------
+    /// <summary>
+    /// 固定（ロック）パラメータ定義.
+    /// </summary>
+    // -------------------------------------------------------------------------------------
     [System.Serializable]
     public class Lock
     {
         public bool Move = false;
         public bool Rotation = false;
+
+        public bool Click = false;
+        public bool Look = false;
     }
 
-    [SerializeField] LayerMask mask = default(LayerMask);
-
+    // クリック、タップRayのマスク.
+    [SerializeField] LayerMask clickRayMask = default(LayerMask);
+    // 画面中心Rayのマスク.
+    [SerializeField] LayerMask centerRayMask = default(LayerMask);
+    // プレイヤー.
     [SerializeField] AppPlayerController player = null;
-
+    // 移動用UIの背景レクトトランスフォーム.
     [SerializeField] RectTransform stickBgRect = null;
+    // 移動用UIのスティックレクトトランスフォーム.
     [SerializeField] RectTransform stickImageRect = null;
 
-
-    [SerializeField] Text platformText = null;
-
-    
-    public Text DebugText = null;
+    [SerializeField] Image bgImage = null;
 
 
+    // 現在のロック状態.
     public Lock CurrentLock = new Lock();
+    // マウスクリックでの回転をロック.
+    public bool IsClickRotationLock{ get; set; } = false;
+
+    // タッチの際UIなどに触れて画面回転をしない指のフィンガーID.
+    public List<int> CurrentNonRotationFingerId = new List<int>();
+    // 現在回転に使用しているフィンガーID.
+    public int CurrentRotationFingerId{ get; set; } = -1;
+    // 現在移動に使用しているフィンガーID.
+    public int CurrentMoveFingerId{ get; set; } = -1;
+
+    // 移動用のクリック開始位置.
+    Vector3? startMoveMousePosition = null;
+
+    InteractableItemBase currentCenterRayHit = null;
+
 
     
-    Vector3? startMoveMousePosition = null;
+    // DEBUG.
+    [SerializeField] Text platformText = null;
+    [SerializeField] Text touchDebugText = null;
+    public Text DebugText = null;
+    [SerializeField] GameObject testWindow = null;
+
+
 
     void Start()
     {
@@ -64,32 +101,47 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     {
         if( Input.GetMouseButtonDown( 0 ) == true ) 
         {
-            UpdateRaycast( MouseAction.Down );
+            UpdateClickRaycast( MouseAction.Down );
         }
         else if( Input.GetMouseButton( 0 ) == true ) 
         {
-            UpdateRaycast( MouseAction.Hold );
+            UpdateClickRaycast( MouseAction.Hold );
         }
         else if( Input.GetMouseButtonUp( 0 ) == true ) 
         {
-            UpdateRaycast( MouseAction.Up );
+            UpdateClickRaycast( MouseAction.Up );
         }
 
-        UpdateCameraRotation();
+        UpdateCenterRaycast();
+
+
+        var _tCount = Input.touchCount;
+        var _isMouse = Input.GetMouseButton( 0 );
+        touchDebugText.text = "Touch : " + _tCount + "/ Mouse : " + _isMouse;
+
+        UpdateRotation();
+
     }
 
-    void UpdateRaycast( MouseAction mouseAction ) 
+    // -------------------------------------------------------------------------------------
+    /// <summary>
+    /// クリック、タップした位置にRayを発射.
+    /// </summary>
+    /// <param name="mouseAction"> マウス(タップ)のアクション状態. </param>
+    // -------------------------------------------------------------------------------------
+    void UpdateClickRaycast( MouseAction mouseAction ) 
     {    
+        if( CurrentLock.Click == true ) return;
+
         // Rayの作成
-        // Ray ray = new Ray( transform.position, transform.forward );
         Ray mouseRay = Camera.main.ScreenPointToRay( Input.mousePosition );
     	
         // Rayが衝突したコライダーの情報を得る
         RaycastHit hit;
         // Rayが衝突したかどうか
-        if( Physics.Raycast( mouseRay, out hit, 5.0f, mask )) 
+        if( Physics.Raycast( mouseRay, out hit, 5.0f, clickRayMask )) 
         {
-            Debug.Log( hit.collider.gameObject.name );
+            // Debug.Log( hit.collider.gameObject.name );
             DebugText.text = hit.collider.gameObject.name;
             if( hit.collider.gameObject.tag == "Interactable" )
             {
@@ -97,9 +149,9 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
                 
                 switch( mouseAction )
                 {
-                    case MouseAction.Down: _interact.OnPointerDown(); break;
-                    case MouseAction.Hold: _interact.OnPointerHold(); break;
-                    case MouseAction.Up  : _interact.OnPointerUp();   break;
+                    case MouseAction.Down: _interact.OnClickPointerDown(); break;
+                    case MouseAction.Hold: _interact.OnClickPointerHold(); break;
+                    case MouseAction.Up  : _interact.OnClickPointerUp();   break;
                 }
             }
         } 
@@ -116,25 +168,139 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
         // }
     }
 
-    
-    public void SetPlatform( string platformKey )
+    void UpdateCenterRaycast()
     {
-        Debug.Log( "Platform : " + platformKey );
-        platformText.text = platformKey;
+        if( CurrentLock.Look == true )
+        {
+            if( currentCenterRayHit != null )
+            {
+                currentCenterRayHit.OnCenterPointerExit();
+                currentCenterRayHit = null;
+            }
+            return;
+        }
+
+        Ray centerRay = Camera.main.ScreenPointToRay( new Vector3( Screen.width / 2f, Screen.height / 2f, 0 ) );
+    	
+        // Rayが衝突したコライダーの情報を得る
+        RaycastHit hit;
+        // Rayが衝突したかどうか
+        if( Physics.Raycast( centerRay, out hit, 5.0f, centerRayMask )) 
+        {
+            // Debug.Log( "Center : " + hit.collider.gameObject.name );
+            if( hit.collider.gameObject.tag == "Interactable" )
+            {
+                var _interact = hit.collider.gameObject.GetComponent<InteractableItemBase>();
+                
+                if( currentCenterRayHit == null )
+                {
+                    currentCenterRayHit = _interact;
+                    _interact.OnCenterPointer();
+                }
+                else if( currentCenterRayHit == _interact ) 
+                {
+                    _interact.OnCenterPointer();
+                }
+                else if( currentCenterRayHit != _interact )
+                {
+                    currentCenterRayHit.OnCenterPointerExit();
+                    currentCenterRayHit = _interact;
+                    _interact.OnCenterPointer();
+                }
+                else 
+                {
+                    Debug.LogWarning( "currentCenterRayHit が不正な値です." );
+                }
+            }
+            else
+            {
+                if( currentCenterRayHit != null )
+                {
+                    currentCenterRayHit.OnCenterPointerExit();
+                    currentCenterRayHit = null;
+                }
+            }
+        } 
+        else
+        {
+            if( currentCenterRayHit != null )
+            {
+                currentCenterRayHit.OnCenterPointerExit();
+                currentCenterRayHit = null;
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------------------
+    /// <summary>
+    /// 回転処理.
+    /// </summary>
+    // -------------------------------------------------------------------------------------
+    void UpdateRotation()
+    {
+
+        if( CurrentLock.Rotation == true ) return;
+
+        // マウスクリック.
+        if( Input.GetMouseButton( 0 ) == true && Input.touchCount == 0 )
+        {
+            if( IsClickRotationLock == false ) player.UpdateClickCameraRotation();
+        }
+        else if( Input.touchCount > 0 )
+        {
+            List<Touch> _touchList = new List<Touch>();
+
+            foreach( var t in Input.touches )
+            {
+                Debug.Log( t.fingerId + " : @1" );
+                bool _isNonRot = false;
+                foreach( var id in CurrentNonRotationFingerId )
+                {
+                    Debug.Log( id + " : @2" );
+                    if( id == t.fingerId )
+                    { 
+                        _isNonRot = true; 
+                        break; 
+                    }
+                }
+
+                if( _isNonRot == false ) _touchList.Add( t );
+            }
+
+            if( _touchList.Count > 0 )
+            {
+                var _currentFinger = _touchList[ _touchList.Count - 1 ];
+                Debug.Log( _currentFinger.fingerId + " : @3" );
+
+                if( CurrentRotationFingerId != _currentFinger.fingerId )
+                {
+                    player.ResetRotationValue();
+                }
+                player.UpdateTouchCameraRotation( _currentFinger );
+                CurrentRotationFingerId = _currentFinger.fingerId;
+            }
+            else
+            {                
+                Debug.Log( _touchList.Count + " : @4" );
+                player.ResetRotationValue();
+                CurrentRotationFingerId = -1;
+            }
+        }
+        else if( Input.touchCount == 0 )
+        {
+            CurrentNonRotationFingerId.Clear();
+            player.ResetRotationValue();
+            CurrentRotationFingerId = -1;
+        }
     }
 
 
 
-    public void TestLink()
-    {
-        Debug.Log( "https://daijimomii.github.io/WebGl_PVSample_Info/  にアクセスします" );
-        // Application.OpenURL( "https://daijimomii.github.io/WebGl_PVSample_Info/" );
-        OpenUrl( "https://daijimomii.github.io/WebGl_PVSample_Info/" );
-    }
-
-
-
-
+    // -------------------------------------------------------------------------------------
+    /// <summary>
+    ///  スマホ用移動UIのポインターダウンコール.
+    /// </summary>
+    // -------------------------------------------------------------------------------------
     public void OnPhoneUiStickPointerDown()
     {
         if( CurrentLock.Move == true ) return;
@@ -143,17 +309,61 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
         {
             var _touches = Input.touches;
             var _currentTouch = _touches[ _touches.Length - 1 ];
-            player.CurrentMoveFingerId = _currentTouch.fingerId;
+            CurrentMoveFingerId = _currentTouch.fingerId;
+
+            //
+            CurrentNonRotationFingerId.Add( _currentTouch.fingerId );
         }
+        else 
+        {
+            IsClickRotationLock = true;
+        }
+        
     }
 
+    // -------------------------------------------------------------------------------------
+    /// <summary>
+    ///  スマホ用移動UIのポインターアップコール.
+    /// </summary>
+    // -------------------------------------------------------------------------------------
     public void OnPhoneUiStickPointerUp()
     {
         stickImageRect.anchoredPosition = Vector3.zero;
         startMoveMousePosition = null;
         player.PhoneUiInput = null;
+        IsClickRotationLock = false;
+
+
+        if( Input.touchCount == 0 )
+        {
+            CurrentNonRotationFingerId.Clear();
+        }
+        else
+        {
+            int _releaseFinger = -1;
+            foreach( var t in Input.touches )
+            {
+                foreach( var id in CurrentNonRotationFingerId )
+                {
+                    if( id == t.fingerId ) continue;
+                    _releaseFinger = id;
+                }
+            } 
+
+            if( _releaseFinger != -1 && CurrentNonRotationFingerId.Contains( _releaseFinger ) == true )
+            {
+                // var _rIndex = CurrentNonRotationFingerId.IndexOf( _releaseFinger );
+                CurrentNonRotationFingerId.Remove( _releaseFinger );
+            } 
+        }
     }
-    
+
+
+    // -------------------------------------------------------------------------------------
+    /// <summary>
+    ///  スマホ用移動UIのポインタードラッグコール.
+    /// </summary>
+    // -------------------------------------------------------------------------------------
     public void OnPhoneUiStickDrag()
     {
         if( CurrentLock.Move == true ) return;
@@ -163,16 +373,16 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
             if( Input.touchCount > 0 )
             { 
                 var _touches = Input.touches;
-                if( player.CurrentMoveFingerId <= 0 ) 
+                if( CurrentMoveFingerId <= 0 ) 
                 {                   
                     var _currentTouch = _touches[ _touches.Length - 1 ];
-                    player.CurrentMoveFingerId = _currentTouch.fingerId;
+                    CurrentMoveFingerId = _currentTouch.fingerId;
                 }
 
                 Touch? _selectedTouch = null;
                 foreach( var t in _touches )
                 {
-                    if( t.fingerId == player.CurrentMoveFingerId ) _selectedTouch = t;
+                    if( t.fingerId == CurrentMoveFingerId ) _selectedTouch = t;
                 }
 
                 if( _selectedTouch == null )
@@ -198,12 +408,12 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
                 var _touches = Input.touches;
                 foreach( var t in _touches )
                 {
-                    if( t.fingerId == player.CurrentMoveFingerId ) _selectedTouch = t;
+                    if( t.fingerId == CurrentMoveFingerId ) _selectedTouch = t;
                 }
                
                 if( _selectedTouch == null )
                 {
-                    Debug.LogWarning( "IDに該当するタッチを検出できませんでした、FingerId = " + player.CurrentMoveFingerId );
+                    Debug.LogWarning( "IDに該当するタッチを検出できませんでした、FingerId = " + CurrentMoveFingerId );
                     return;
                 }
 
@@ -246,83 +456,13 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
             player.PhoneUiInput = _playerInput;
         }        
     }
-
-
-
-    public void OnPhoneUiBgPointerDown()
-    {
-        if( CurrentLock.Rotation == true ) return;
-
-        if( Input.touchCount > 0 )
-        {
-            var _touches = Input.touches;
-            var _currentTouch = _touches[ _touches.Length - 1 ];
-            if( player.CurrentRotationFingerId != -1 && player.CurrentRotationFingerId != _currentTouch.fingerId )
-            {
-                player.ResetRotationValue();
-            }
-
-            player.CurrentRotationFingerId = _currentTouch.fingerId;
-            player.IsRotationLock = false;
-        }
-        else
-        {            
-            player.IsRotationLock = false;
-        }
-    }
-
-    public void OnPhoneUiBgDrag()
-    {
-        // if( CurrentLock.Rotation == true ) return;
-
-        // if( Input.touchCount > 0 )
-        // {
-        //     var _touches = Input.touches;
-        //     var _currentTouch = _touches[ _touches.Length - 1 ];
-        //     if( player.CurrentRotationFingerId != -1 && player.CurrentRotationFingerId != _currentTouch.fingerId )
-        //     {
-        //         player.ResetRotationValue();
-        //         player.CurrentRotationFingerId = _currentTouch.fingerId;
-        //     }
-
-        //     player.UpdateCameraRotation( true );
-        // }
-        // else
-        // {            
-        //     player.UpdateCameraRotation( false );
-        // }        
-
-        // UpdateCameraRotation();
-    }
-
-    void UpdateCameraRotation()
-    {
-        if( CurrentLock.Rotation == true ) return;
-
-        if( Input.touchCount > 0 )
-        {
-            var _touches = Input.touches;
-            var _currentTouch = _touches[ _touches.Length - 1 ];
-            if( player.CurrentRotationFingerId != -1 && player.CurrentRotationFingerId != _currentTouch.fingerId )
-            {
-                player.ResetRotationValue();
-                player.CurrentRotationFingerId = _currentTouch.fingerId;
-            }
-
-            player.UpdateCameraRotation( true );
-        }
-        else if( Input.GetMouseButton( 0 ) == true )
-        {            
-            player.UpdateCameraRotation( false );
-        }        
-    }
-
-    public void OnPhoneUiBgPointerUp()
-    {
-        player.ResetRotationValue();
-    }
-
-
+    
+    // -------------------------------------------------------------------------------------
+    /// <summary>
+    /// URLにアクセス.
+    /// </summary>
+    /// <param name="url"></param>
+    // -------------------------------------------------------------------------------------
     public void AccessUrl( string url )
     {
         Debug.Log( url + " にアクセスします" );
@@ -341,4 +481,62 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
             OpenUrl( url );
         }
     }
+
+
+    public void Open_Test()
+    {
+        CurrentLock.Move = true;
+        CurrentLock.Rotation = true;
+        CurrentLock.Click = true;
+        CurrentLock.Look = true;
+
+        bgImage.gameObject.SetActive( true );
+        var _current = bgImage.color;
+        _current.a = 0;
+        bgImage.color = _current;
+        bgImage.DOFade( 0.5f, 1f )
+        .OnComplete( () => 
+        {  
+            testWindow.SetActive( true );
+        } );
+    }
+
+    public void Close_Test()
+    {
+        testWindow.SetActive( false );
+        bgImage.DOFade( 0f, 1f )
+        .OnComplete( () => 
+        {
+            bgImage.gameObject.SetActive( false );
+
+            CurrentLock.Move = false;
+            CurrentLock.Rotation = false;
+            CurrentLock.Click = false;
+            CurrentLock.Look = false;
+
+        } );
+    }
+
+
+    
+    // -------------------------------------------------------------------------------------
+    /// <summary>
+    /// プラグインから実行するためのプラットフォーム判定.
+    /// </summary>
+    /// <param name="platformKey"></param>
+    // -------------------------------------------------------------------------------------
+    public void SetPlatform( string platformKey )
+    {
+        Debug.Log( "Platform : " + platformKey );
+        platformText.text = platformKey;
+    }
+    
+
+    public void TestLink()
+    {
+        Debug.Log( "https://daijimomii.github.io/WebGl_PVSample_Info/  にアクセスします" );
+        // Application.OpenURL( "https://daijimomii.github.io/WebGl_PVSample_Info/" );
+        OpenUrl( "https://daijimomii.github.io/WebGl_PVSample_Info/" );
+    }
+
 }
