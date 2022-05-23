@@ -89,15 +89,33 @@
 
         var script = document.createElement("script");
         script.src = loaderUrl;
-        script.onload = () => {
-          createUnityInstance(canvas, config, (progress) => {
+        script.onload = () => 
+        {
+          createUnityInstance(canvas, config, (progress) => 
+          {
             progressBarFull.style.width = 100 * progress + "%";
-          }).then((unityInstance) => {
+          })
+          .then((unityInstance) => 
+          {
             loadingBar.style.display = "none";
             // fullscreenButton.onclick = () => {
             //   unityInstance.SetFullscreen(1);
             // };
-          }).catch((message) => {
+            window.addEventListener
+            (
+              'resize', function()
+              {
+                console.log("Width:" + window.innerWidth);
+                console.log("Height:" + window.innerHeight);
+
+                unityInstance.SendMessage('AppGameManager', 'ChangeScreenWidth', window.innerWidth );
+
+                unityInstance.SendMessage('AppGameManager', 'ChangeScreenHeight', window.innerHeight );
+              }
+            );
+          })
+          .catch((message) => 
+          {
             alert(message);
           });
         };

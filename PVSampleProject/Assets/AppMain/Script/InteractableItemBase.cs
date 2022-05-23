@@ -2,8 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Events;
+using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 
-public class InteractableItemBase : MonoBehaviour
+public class InteractableItemBase : MonoBehaviour //, IPointerClickHandler
 {
     [System.Serializable]
     public class InformationParam
@@ -23,6 +26,8 @@ public class InteractableItemBase : MonoBehaviour
 
     Coroutine autoHideCor = null;
 
+    bool isDropping = false;
+
     void Start()
     {
         
@@ -33,21 +38,42 @@ public class InteractableItemBase : MonoBehaviour
         
     }
 
+    // public void OnPointerClick( PointerEventData eventData )
+    // {
+    //     Debug.Log( "Click----------------" );
+    // }
+
+    public virtual void OnClickPointerExit()
+    {
+        // Debug.Log( "外にでたーーーー" );
+        isDropping = false;
+        // AppGameManager.Instance.IsClickRotationLock = false;
+    }
+
     public virtual void OnClickPointerDown()
     {
         // Debug.Log( gameObject.name + "@ Base Down" );
-        AppGameManager.Instance.Open_Test();
+        isDropping = true;
+        // AppGameManager.Instance.IsClickRotationLock = true;
     }
 
     public virtual void OnClickPointerUp()
     {
         // Debug.Log( gameObject.name + "@ Base Up" );
+        if( isDropping == true ) OnClick();
+        isDropping = false;
+        // AppGameManager.Instance.IsClickRotationLock = false;
     }
 
     public virtual void OnClickPointerHold()
     {
-        // Debug.Log( gameObject.name + "@ Base Hold" );
+        Debug.Log( gameObject.name + "@ Base Hold" );
     } 
+
+    public virtual void OnClick()
+    {
+        Debug.Log( "Click--" + gameObject.name );
+    }
 
     public virtual void OnCenterPointer()
     {

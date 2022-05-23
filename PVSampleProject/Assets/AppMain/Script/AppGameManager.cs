@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Events;
 using System.Runtime.InteropServices;
 using DG.Tweening;
 
@@ -23,7 +24,7 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     // -------------------------------------------------------------------------------------
     public enum MouseAction
     {
-        Down, Hold, Up,
+        None, Down, Hold, Up,
     }
 
     // -------------------------------------------------------------------------------------
@@ -54,6 +55,9 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
 
     [SerializeField] Image bgImage = null;
 
+    [SerializeField] Camera subUiCamera = null;
+
+
 
     // 現在のロック状態.
     public Lock CurrentLock = new Lock();
@@ -67,9 +71,22 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     // 現在移動に使用しているフィンガーID.
     public int CurrentMoveFingerId{ get; set; } = -1;
 
+    public Camera SubUiCamera{ get{ return subUiCamera; } }
+
+    
+    public int DefaultLayerNum{ get; } = 0;
+    public int AttentionLayerNum{ get; } = 7;
+
+
+    public class PresentationEvent : UnityEvent<PresentationInteractItem>{}
+    public PresentationEvent PresentationStartEvent = new PresentationEvent();
+    public UnityEvent PresentationEndEvent = new UnityEvent();
+
     // 移動用のクリック開始位置.
     Vector3? startMoveMousePosition = null;
 
+
+    InteractableItemBase currentCursorRayHit = null;
     InteractableItemBase currentCenterRayHit = null;
 
 
@@ -111,6 +128,10 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
         {
             UpdateClickRaycast( MouseAction.Up );
         }
+        else
+        {
+            UpdateClickRaycast( MouseAction.None );
+        }
 
         UpdateCenterRaycast();
 
@@ -131,7 +152,15 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     // -------------------------------------------------------------------------------------
     void UpdateClickRaycast( MouseAction mouseAction ) 
     {    
-        if( CurrentLock.Click == true ) return;
+        if( CurrentLock.Click == true )
+        {
+            if( currentCursorRayHit != null )
+            {
+                currentCursorRayHit.OnClickPointerExit();
+                currentCursorRayHit = null;
+            }
+            return;
+        }
 
         // Rayの作成
         Ray mouseRay = Camera.main.ScreenPointToRay( Input.mousePosition );
@@ -141,11 +170,17 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
         // Rayが衝突したかどうか
         if( Physics.Raycast( mouseRay, out hit, 5.0f, clickRayMask )) 
         {
-            // Debug.Log( hit.collider.gameObject.name );
-            DebugText.text = hit.collider.gameObject.name;
             if( hit.collider.gameObject.tag == "Interactable" )
             {
                 var _interact = hit.collider.gameObject.GetComponent<InteractableItemBase>();
+                DebugText.text = hit.collider.gameObject.name;
+
+                if( currentCenterRayHit != null && currentCursorRayHit != _interact )
+                {
+                    _interact.OnClickPointerExit();                    
+                }
+
+                currentCursorRayHit = _interact;
                 
                 switch( mouseAction )
                 {
@@ -154,10 +189,23 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
                     case MouseAction.Up  : _interact.OnClickPointerUp();   break;
                 }
             }
+            else
+            {
+                if( currentCursorRayHit != null )
+                {
+                    currentCursorRayHit.OnClickPointerExit();
+                    currentCursorRayHit = null;
+                }
+            }
         } 
         else
         {
             DebugText.text = "none";
+            if( currentCursorRayHit != null )
+            {
+                currentCursorRayHit.OnClickPointerExit();
+                currentCursorRayHit = null;
+            }
         }
     
         // // Rayが衝突した全てのコライダーの情報を得る。＊順序は保証されない
@@ -518,6 +566,18 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     }
 
 
+
+    public void SetPresentation( PresentationInteractItem presentationItem )
+    {
+        PresentationStartEvent?.Invoke( presentationItem );
+    }
+
+    public void EndPresentation()
+    {
+        PresentationEndEvent?.Invoke();
+    }
+
+
     
     // -------------------------------------------------------------------------------------
     /// <summary>
@@ -537,6 +597,16 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
         Debug.Log( "https://daijimomii.github.io/WebGl_PVSample_Info/  にアクセスします" );
         // Application.OpenURL( "https://daijimomii.github.io/WebGl_PVSample_Info/" );
         OpenUrl( "https://daijimomii.github.io/WebGl_PVSample_Info/" );
+    }
+
+    public void ChangeScreenWidth( int width )
+    {
+        Debug.Log( "HTMLからのコール Width : " + width );
+    }
+
+    public void ChangeScreenHeight( int height )
+    {
+        Debug.Log( "HTMLからのコール Hight : " + height );
     }
 
 }

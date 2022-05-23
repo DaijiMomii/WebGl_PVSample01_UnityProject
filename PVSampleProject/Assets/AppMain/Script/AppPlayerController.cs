@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening;
 
 public class AppPlayerController : MonoBehaviour
 {
@@ -23,6 +24,7 @@ public class AppPlayerController : MonoBehaviour
 
     // カメラ回転速度.
     [SerializeField] float rotationSpeed = 3f;
+    [SerializeField] float presentationTransitionTime = 0.5f;
     // 移動パラメータ.
     [SerializeField] MoveParam Move = new MoveParam();
 
@@ -30,6 +32,10 @@ public class AppPlayerController : MonoBehaviour
     [SerializeField] Transform cameraRootH = null;
     // カメラ垂直回転トランスフォーム.
     [SerializeField] Transform cameraRootV = null;
+
+    
+    [SerializeField] Transform cameraLocalRoot = null;
+    [SerializeField] Camera attentionCamera = null;
 
 
     // リジッドボディ.
@@ -51,6 +57,8 @@ public class AppPlayerController : MonoBehaviour
     // 垂直回転値.
     float currentEulerRotationV = 0;
 
+    // List<( int, Transform )> childrenTransformWithLayer = new List<( int, Transform )>();
+
     
 
 
@@ -59,6 +67,8 @@ public class AppPlayerController : MonoBehaviour
     {
         // 角度は取得すべきではないので、回転量を独自に保管.
         currentEulerRotationV = cameraRootV.localEulerAngles.x;
+        AppGameManager.Instance.PresentationStartEvent.AddListener( SetPresentation );
+        AppGameManager.Instance.PresentationEndEvent.AddListener( EndPresentation );
     }
 
     void Update()
@@ -283,11 +293,54 @@ public class AppPlayerController : MonoBehaviour
     }
 
 
+    public void SetPresentation( PresentationInteractItem presentationItem )
+    {
+        attentionCamera.gameObject.SetActive( true );
+
+        var seq = DOTween.Sequence();
+
+        seq.Append
+        (
+            cameraLocalRoot.transform.DOMove( presentationItem.PresentationCameraTransform.position, presentationTransitionTime )
+        );
+
+        seq.Join
+        (  
+            cameraLocalRoot.transform.DOLocalRotateQuaternion( presentationItem.PresentationCameraTransform.rotation, presentationTransitionTime )
+        );
+
+        seq
+        .SetEase( Ease.InOutQuad )
+        .SetLink( gameObject );
+    }
+
+    
+
+    public void EndPresentation()
+    {
+        var seq = DOTween.Sequence();
+        attentionCamera.gameObject.SetActive( false );
+
+        seq.Append
+        (
+            cameraLocalRoot.transform.DOLocalMove( Vector3.zero, presentationTransitionTime )
+        );
+
+        seq.Join
+        (  
+            cameraLocalRoot.transform.DOLocalRotateQuaternion( Quaternion.identity, presentationTransitionTime )
+        );       
+
+        seq
+        .SetEase( Ease.InOutQuad )
+        .SetLink( gameObject );
+    }
+
+
     public void TestPointerClicked( UnityEngine.EventSystems.BaseEventData eventData )
     {
         Debug.Log( eventData.selectedObject.name + "@@@" );
     }
-
 
 
 
