@@ -15,6 +15,8 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     // プラグインインポートURLを開く.
     [DllImport("__Internal")]
     private static extern void OpenUrl( string url );
+    [DllImport("__Internal")]
+    private static extern void OpenUrlNewWindow( string url );
 
 
     // -------------------------------------------------------------------------------------
@@ -57,6 +59,12 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
 
     [SerializeField] Camera subUiCamera = null;
 
+    [SerializeField] Transform popupParent = null;
+    [SerializeField] UITransition popupBgTransition = null;
+
+    [SerializeField] UITransition stopWindowTransition = null;
+
+
 
 
     // 現在のロック状態.
@@ -93,9 +101,11 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     
     // DEBUG.
     [SerializeField] Text platformText = null;
-    [SerializeField] Text touchDebugText = null;
-    public Text DebugText = null;
-    [SerializeField] GameObject testWindow = null;
+    // [SerializeField] Text touchDebugText = null;
+    // public Text DebugText = null;
+    // [SerializeField] GameObject testWindow = null;
+
+    // [SerializeField] GameObject popupTest = null;
 
 
 
@@ -110,6 +120,7 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
             DeviceInformation();
             // platformText.text = "---";
         }
+
     }
 
 
@@ -136,9 +147,10 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
         UpdateCenterRaycast();
 
 
-        var _tCount = Input.touchCount;
-        var _isMouse = Input.GetMouseButton( 0 );
-        touchDebugText.text = "Touch : " + _tCount + "/ Mouse : " + _isMouse;
+        // var _tCount = Input.touchCount;
+        // var _isMouse = Input.GetMouseButton( 0 );
+        // touchDebugText.text = "Touch : " + _tCount + "/ Mouse : " + _isMouse;
+        // touchDebugText.text = "W : " + Screen.width + " H : " + Screen.height;
 
         UpdateRotation();
 
@@ -173,7 +185,7 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
             if( hit.collider.gameObject.tag == "Interactable" )
             {
                 var _interact = hit.collider.gameObject.GetComponent<InteractableItemBase>();
-                DebugText.text = hit.collider.gameObject.name;
+                // DebugText.text = hit.collider.gameObject.name;
 
                 if( currentCenterRayHit != null && currentCursorRayHit != _interact )
                 {
@@ -200,7 +212,7 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
         } 
         else
         {
-            DebugText.text = "none";
+            // DebugText.text = "none";
             if( currentCursorRayHit != null )
             {
                 currentCursorRayHit.OnClickPointerExit();
@@ -511,7 +523,7 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     /// </summary>
     /// <param name="url"></param>
     // -------------------------------------------------------------------------------------
-    public void AccessUrl( string url )
+    public void AccessUrl( string url, bool isNewWindow = false )
     {
         Debug.Log( url + " にアクセスします" );
 
@@ -524,46 +536,50 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
             Debug.Log( "Editorでは通常のApplication.OpenURL()を使用します" );
             Application.OpenURL( url );
         }
-        else
+        else if( isNewWindow == false )
         {
             OpenUrl( url );
+        }
+        else
+        {
+            OpenUrlNewWindow( url );
         }
     }
 
 
-    public void Open_Test()
-    {
-        CurrentLock.Move = true;
-        CurrentLock.Rotation = true;
-        CurrentLock.Click = true;
-        CurrentLock.Look = true;
+    // public void Open_Test()
+    // {
+    //     CurrentLock.Move = true;
+    //     CurrentLock.Rotation = true;
+    //     CurrentLock.Click = true;
+    //     CurrentLock.Look = true;
 
-        bgImage.gameObject.SetActive( true );
-        var _current = bgImage.color;
-        _current.a = 0;
-        bgImage.color = _current;
-        bgImage.DOFade( 0.5f, 1f )
-        .OnComplete( () => 
-        {  
-            testWindow.SetActive( true );
-        } );
-    }
+    //     bgImage.gameObject.SetActive( true );
+    //     var _current = bgImage.color;
+    //     _current.a = 0;
+    //     bgImage.color = _current;
+    //     bgImage.DOFade( 0.5f, 1f )
+    //     .OnComplete( () => 
+    //     {  
+    //         testWindow.SetActive( true );
+    //     } );
+    // }
 
-    public void Close_Test()
-    {
-        testWindow.SetActive( false );
-        bgImage.DOFade( 0f, 1f )
-        .OnComplete( () => 
-        {
-            bgImage.gameObject.SetActive( false );
+    // public void Close_Test()
+    // {
+    //     testWindow.SetActive( false );
+    //     bgImage.DOFade( 0f, 1f )
+    //     .OnComplete( () => 
+    //     {
+    //         bgImage.gameObject.SetActive( false );
 
-            CurrentLock.Move = false;
-            CurrentLock.Rotation = false;
-            CurrentLock.Click = false;
-            CurrentLock.Look = false;
+    //         CurrentLock.Move = false;
+    //         CurrentLock.Rotation = false;
+    //         CurrentLock.Click = false;
+    //         CurrentLock.Look = false;
 
-        } );
-    }
+    //     } );
+    // }
 
 
 
@@ -575,6 +591,87 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     public void EndPresentation()
     {
         PresentationEndEvent?.Invoke();
+    }
+
+
+    // public void TestPopup()
+    // {
+    //     OpenPopup( popupTest );
+    // }
+
+    public void AppStop()
+    {
+        CurrentLock.Click = true;
+        CurrentLock.Look = true;
+        CurrentLock.Move = true;
+        CurrentLock.Rotation = true;
+
+        
+    }
+
+    public void OpenStopWindow()
+    {
+        stopWindowTransition.TransitionIn();
+    }
+
+    public void AppRestart()
+    {
+        CurrentLock.Click = false;
+        CurrentLock.Look = false;
+        CurrentLock.Move = false;
+        CurrentLock.Rotation = false;
+    }
+    public void CloseStopWindow()
+    {
+        stopWindowTransition.TransitionOut();
+    }
+
+    public void OnStopWindowRestartButtonClicked()
+    {
+        if( stopWindowTransition.IsOpen == true ) stopWindowTransition.TransitionOut();
+        AppRestart();
+    }
+
+
+    public PopupBase OpenPopup( GameObject prefab, UnityAction openedAction = null, UnityAction<PopupBase> buttonAction1 = null, UnityAction<PopupBase> buttonAction2 = null, UnityAction<PopupBase> buttonAction3 = null, bool isBg = true )
+    {
+        if( isBg == true ) popupBgTransition.TransitionIn();
+
+        var _go = Instantiate( prefab, popupParent.position, popupParent.rotation, popupParent );
+        var _popup = _go.GetComponent<PopupBase>();
+        _popup.Open
+        ( 
+            openedAction,
+            () => // button1.
+            {
+                buttonAction1?.Invoke( _popup );
+                // _StandardCloseAction();
+            },
+            () => // button2.
+            {
+                buttonAction2?.Invoke( _popup );
+                // _StandardCloseAction();
+            },
+            () => // button3.
+            {
+                buttonAction3?.Invoke( _popup );
+                // _StandardCloseAction();
+            }
+        );
+
+        return _popup;
+
+        // void _StandardCloseAction()
+        // {
+        //     if( isBg == true ) popupBgTransition.TransitionOut();
+        //     _popup.Close();
+        // }
+    }
+
+    public void ClosePopup( PopupBase popup )
+    {
+        popup.Close();
+        if( popupBgTransition.IsOpen == true ) popupBgTransition.TransitionOut();
     }
 
 

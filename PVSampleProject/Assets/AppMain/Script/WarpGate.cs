@@ -7,38 +7,79 @@ using System.Runtime.InteropServices;
 public class WarpGate : MonoBehaviour
 {
 
-    [SerializeField] string linkUrl = "";
+    [SerializeField] protected string linkUrl = "";
     // "https://daijimomii.github.io/WebGl_PVSample_Info/"
+    [SerializeField] protected bool isAutoWarp = false;
+    [SerializeField] protected bool isOpenStop = true;
+
+    // [SerializeField] protected GameObject colliderCall = null;
+
+    [SerializeField] protected Transform returnPoint = null;
+
+    // [SerializeField] bool isNewWindow = false;
+
+
+
+
 
     public UnityEvent WarpGateEvent = new UnityEvent();
+
+    GameObject player = null;
 
 
 
     
 
-    void Start()
+    protected virtual void Start()
     {
-        
+        // Debug.Log( "Base Start" );
     }
 
-    void Update()
-    {
-        
-    }
-
-
-    void OnTriggerEnter( Collider other ) 
+    protected virtual void OnGateTriggerEnter( Collider other ) 
     {
         if( other.tag == "Player" )
         {
             Debug.Log( "ワープ" );
             WarpGateEvent?.Invoke();
+            player = other.gameObject;
 
-            if( string.IsNullOrEmpty( linkUrl ) == false )
-            {
-                AppGameManager.Instance.AccessUrl( linkUrl );
-            }
+            if( isAutoWarp == true ) Warp();
         }
     }
+
+    protected virtual void OnTriggerEnter( Collider other ) 
+    {
+        if( other.tag == "Player" )
+        {
+            Debug.Log( "ワープ" );
+            WarpGateEvent?.Invoke();
+            player = other.gameObject;
+
+            if( isAutoWarp == true ) Warp();
+        }
+    }
+
+    public void Warp( bool isNewWindow = false )
+    {
+        if( string.IsNullOrEmpty( linkUrl ) == false )
+        {
+            AppGameManager.Instance.AccessUrl( linkUrl, isNewWindow );
+        }
+        else
+        {
+            Debug.LogWarning( "URLを正しく設定してください。" );
+        }
+    }
+
+    public virtual void ReturnPosition()
+    {
+        if( returnPoint != null )
+        {
+            player.transform.position = returnPoint.position;
+        }
+
+        // player = null;
+    }
+
 
 }

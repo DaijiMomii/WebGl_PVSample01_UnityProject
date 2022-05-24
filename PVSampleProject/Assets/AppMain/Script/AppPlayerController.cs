@@ -37,6 +37,8 @@ public class AppPlayerController : MonoBehaviour
     [SerializeField] Transform cameraLocalRoot = null;
     [SerializeField] Camera attentionCamera = null;
 
+    [SerializeField, Range( 0f, 30f )] float addCameraAnglesRatioInPresentation = 21f;
+
 
     // リジッドボディ.
     public Rigidbody Rigid
@@ -299,14 +301,28 @@ public class AppPlayerController : MonoBehaviour
 
         var seq = DOTween.Sequence();
 
+        var _cameraTransform = presentationItem.GetCameraTransformInCurrentOrientation();
+        var _pos = _cameraTransform.position;
+        // 一旦リセット.
+        _cameraTransform.localRotation = Quaternion.identity;
+        var _rot = _cameraTransform.rotation.eulerAngles;
+        var _ratio =  (float)Screen.width / (float)Screen.height;
+        var _add = _ratio * addCameraAnglesRatioInPresentation;
+        _rot.y = 180f + _add;
+        // 先にマーカーの角度をローカルで設定.
+        _cameraTransform.localRotation = Quaternion.Euler( _rot );
+
+        // マーカーを元にワールド角度を取得.
+        var _camQua = _cameraTransform.rotation;
+
         seq.Append
         (
-            cameraLocalRoot.transform.DOMove( presentationItem.PresentationCameraTransform.position, presentationTransitionTime )
+            cameraLocalRoot.transform.DOMove( _pos, presentationTransitionTime )
         );
 
         seq.Join
         (  
-            cameraLocalRoot.transform.DOLocalRotateQuaternion( presentationItem.PresentationCameraTransform.rotation, presentationTransitionTime )
+            cameraLocalRoot.transform.DOLocalRotateQuaternion( _camQua, presentationTransitionTime )
         );
 
         seq

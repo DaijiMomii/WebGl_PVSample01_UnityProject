@@ -20,6 +20,8 @@ public class UITransition : MonoBehaviour
 
     [SerializeField] Parameter parameter = new Parameter();
 
+    public bool IsOpen{ get; private set; } = false;
+
     RectTransform rect = null;
     CanvasGroup canvasGroup = null;
 
@@ -86,6 +88,7 @@ public class UITransition : MonoBehaviour
         .OnComplete( () => 
         {
             completedAction?.Invoke();
+            IsOpen = true;
         } );
     }
 
@@ -130,6 +133,8 @@ public class UITransition : MonoBehaviour
             CanvasGroup.alpha = 1;
             Rect.anchoredPosition = _start;
             completedAction?.Invoke();
+
+            IsOpen = false;
         } );
     }
 }

@@ -50,9 +50,18 @@ mergeInto(LibraryManager.library,
   
   OpenUrl: function( url )
   {
-    window.alert( "アクセス" );
-    window.alert( Pointer_stringify( url ) );
+    var log = "ブースを離れページを移動します。";
+    var caution = log + "(" + Pointer_stringify( url ) + ")";
+    window.alert( caution );
     window.location.href = Pointer_stringify( url ); 
+  },
+
+  OpenUrlNewWindow: function( url )
+  {
+    var log = "新しいタブを開きます。";
+    var caution = log + "(" + Pointer_stringify( url ) + ")";
+    window.alert( caution );
+    window.open( Pointer_stringify( url ) );
   },
 
 

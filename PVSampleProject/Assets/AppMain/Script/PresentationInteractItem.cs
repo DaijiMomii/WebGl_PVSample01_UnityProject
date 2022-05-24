@@ -4,10 +4,13 @@ using UnityEngine;
 
 public class PresentationInteractItem : InteractableItemBase  
 {
-    [SerializeField] Transform presentationCameraTransform = null;
-    [SerializeField] UITransition presentationTransition = null;
+    [SerializeField] Transform presentationCameraTransformHorizontal = null;
+    [SerializeField] Transform presentationCameraTransformVertical = null;
 
-    public Transform PresentationCameraTransform{ get{ return presentationCameraTransform; } }
+    [SerializeField] UITransition presentationTransition = null;
+    [SerializeField] RectTransform presentationRect = null;
+
+    // public Transform PresentationCameraTransform{ get{ return presentationCameraTransform; } }
 
     
     List<( int, Transform )> childrenTransformWithLayer = new List<( int, Transform )>();
@@ -21,6 +24,12 @@ public class PresentationInteractItem : InteractableItemBase
     void Update()
     {
         
+    }
+
+    public Transform GetCameraTransformInCurrentOrientation()
+    {
+        if( Screen.width > Screen.height ) return presentationCameraTransformHorizontal;
+        else return presentationCameraTransformVertical;
     }
 
     public override void OnClick()
@@ -38,7 +47,15 @@ public class PresentationInteractItem : InteractableItemBase
         }
 
         AppGameManager.Instance.SetPresentation( this );
-        // presentation.gameObject.SetActive( true );
+        
+        if( Screen.width > Screen.height )
+        {
+            UiUtility.SetRectTransformStretch( presentationRect, 20f, 20f, Screen.width / 6f, 20f );
+        }
+        else 
+        {
+            UiUtility.SetRectTransformStretch( presentationRect, 20f, Screen.height / 5f, 20f, 20f );
+        }
         presentationTransition.TransitionIn();
 
         AppGameManager.Instance.CurrentLock.Move = true;
