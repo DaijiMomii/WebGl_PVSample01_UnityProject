@@ -322,12 +322,19 @@ public class AppPlayerController : MonoBehaviour
 
         seq.Join
         (  
-            cameraLocalRoot.transform.DOLocalRotateQuaternion( _camQua, presentationTransitionTime )
+            cameraLocalRoot.transform.DORotateQuaternion( _camQua, presentationTransitionTime )
         );
 
         seq
         .SetEase( Ease.InOutQuad )
-        .SetLink( gameObject );
+        .SetLink( gameObject )
+        .OnComplete( () => 
+        {
+            
+            // Debug.Log( _cameraTransform.position + "/" + _cameraTransform.rotation.eulerAngles + " @@@ " + cameraLocalRoot.position + "/" + cameraLocalRoot.rotation.eulerAngles );
+        } );
+
+        
     }
 
     
