@@ -8,12 +8,18 @@ using UnityEngine.UI;
 [RequireComponent( typeof(RawImage) )]
 public class AppMoviePlayer : MonoBehaviour
 {
-    [SerializeField] string movieFolderPath = "Movie";
-    [SerializeField] string streamingAssetsFileName = "";
+    [SerializeField] protected string movieFolderPath = "Movie";
+    [SerializeField] protected string streamingAssetsFileName = "";
 
-    VideoPlayer video = null;
-    RawImage raw = null;
-    [SerializeField] Canvas canvas = null;
+    [SerializeField] protected bool playOnAwake = true;
+
+    [SerializeField] protected bool isMute = true;
+
+    protected VideoPlayer video = null;
+    protected RawImage raw = null;
+    // [SerializeField] Canvas canvas = null;
+
+    bool isInit = false;
 
     public VideoPlayer Video
     {
@@ -34,45 +40,101 @@ public class AppMoviePlayer : MonoBehaviour
     }
 
 
-    void Start()
+    protected virtual void Start()
     {
-        Video.source = VideoSource.Url;
-        if( string.IsNullOrEmpty( movieFolderPath ) == true ) Video.url =  Application.streamingAssetsPath + "/" + streamingAssetsFileName;
-        Video.url = Application.streamingAssetsPath + "/" + movieFolderPath + "/" + streamingAssetsFileName;
-
-        Video.Prepare();
-        Video.Play();
+        // Video.source = VideoSource.Url;
+        // if( string.IsNullOrEmpty( movieFolderPath ) == true ) Video.url =  Application.streamingAssetsPath + "/" + streamingAssetsFileName;
+        // Video.url = Application.streamingAssetsPath + "/" + movieFolderPath + "/" + streamingAssetsFileName;
 
         StartCoroutine( Init() );
     }
 
-    void Update()
+    protected virtual void Update()
     {
-        // Raw.texture = Video.texture;   
-        // UiUtility.SetAnchorPreset( UiUtility.Anchor.Middle_Center,  Raw.rectTransform );
-        // Raw.rectTransform.position = Vector2.zero;
     }
 
-    IEnumerator Init()
+    void SetUrl()
     {
-        yield return new WaitUntil( () => Video.texture != null );
+        if( string.IsNullOrEmpty( Video.url ) == true )
+        {
+            Video.source = VideoSource.Url;
+            if( string.IsNullOrEmpty( movieFolderPath ) == true ) Video.url =  Application.streamingAssetsPath + "/" + streamingAssetsFileName;
+            Video.url = Application.streamingAssetsPath + "/" + movieFolderPath + "/" + streamingAssetsFileName;
+        }
+    }
 
+    protected virtual IEnumerator Init()
+    {
+        SetUrl();
+        Video.Prepare(); 
+        yield return new WaitUntil( () => Video.texture != null );
         Raw.texture = Video.texture;   
+
+        // if( isInit == false ) SetSize();
+        SetSize();
+
+        Video.Play();        
+        if( playOnAwake == false )
+        {
+            Video.Pause();
+            Video.frame = 2;
+        }
+
+        isInit = true;
+    }
+
+    public void HtmlInit()
+    {
+        Debug.Log( "HTMLのInit" );
+        AppGameManager.Instance.AddLog( "HTMLの動画Init開始" );
+        // StartCoroutine( HtmlInitCor() );
+
+        AppGameManager.Instance.AddLog( "IsInit = " + isInit );
+
+        Video.SetDirectAudioMute( 0, false );  
+        float _vol = ( isMute == true ) ? 0 : 1f;
+        Video.SetDirectAudioVolume( 0, _vol );      
+        Video.Play();  
+    }
+    // IEnumerator HtmlInitCor()
+    // {
+    //     SetUrl();
+    //     Video.Prepare(); 
+
+    //     yield return new WaitUntil( () => Video.texture != null );
+
+    //     Raw.texture = Video.texture;   
+    //     SetSize();
+        
+    //     Video.SetDirectAudioMute( 0, false );  
+    //     float _vol = ( isMute == true ) ? 0 : 1f;
+    //     Video.SetDirectAudioVolume( 0, _vol );      
+
+    //     Video.Play();  
+    //     Video.Pause();
+    //     Video.frame = 2;
+
+    //     AppGameManager.Instance.AddLog( "HTMLの動画Init完了" );
+    // }
+
+    void SetSize()
+    {
+        var _rawSize = new Vector2( Raw.rectTransform.rect.width, Raw.rectTransform.rect.height );
+  
         UiUtility.SetAnchorPreset( UiUtility.Anchor.Middle_Center,  Raw.rectTransform );
-        // Raw.transform.localPosition = Vector3.zero;
-        var _curret = Raw.rectTransform.sizeDelta;
-        var _rawRatio = Raw.rectTransform.rect.width / Raw.rectTransform.rect.height;
+        var _current = _rawSize;
+        var _rawRatio = _rawSize.x / _rawSize.y;
         var _videoRatio = (float)Video.texture.width / (float)Video.texture.height;
 
         if( _videoRatio > _rawRatio )
         {
-            _curret.y = _curret.x * ( (float)Video.texture.height / (float)Video.texture.width );
+            _current.y = _current.x * ( (float)Video.texture.height / (float)Video.texture.width );
         }
         else 
         {
-            _curret.x = _curret.y * ( (float)Video.texture.width / (float)Video.texture.height );
+            _current.x = _current.y * ( (float)Video.texture.width / (float)Video.texture.height );
         }
 
-        Raw.rectTransform.sizeDelta = _curret;
+        Raw.rectTransform.sizeDelta = _current;
     }
 }

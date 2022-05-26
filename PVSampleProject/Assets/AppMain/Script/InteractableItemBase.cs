@@ -67,7 +67,7 @@ public class InteractableItemBase : MonoBehaviour //, IPointerClickHandler
 
     public virtual void OnClickPointerHold()
     {
-        Debug.Log( gameObject.name + "@ Base Hold" );
+        // Debug.Log( gameObject.name + "@ Base Hold" );
     } 
 
     public virtual void OnClick()
@@ -77,14 +77,14 @@ public class InteractableItemBase : MonoBehaviour //, IPointerClickHandler
 
     public virtual void OnCenterPointer()
     {
-        Debug.Log( gameObject.name + "@ Center Pointer" );
+        // Debug.Log( gameObject.name + "@ Center Pointer" );
         SetInformation();
     }
 
     public virtual void OnCenterPointerExit()
     {
 
-        Debug.Log( gameObject.name + "@ Exit Center Pointer" );
+        // Debug.Log( gameObject.name + "@ Exit Center Pointer" );
 
         if( autoHideCor != null )
         {

@@ -10,6 +10,8 @@ public class PresentationInteractItem : InteractableItemBase
     [SerializeField] UITransition presentationTransition = null;
     [SerializeField] RectTransform presentationRect = null;
 
+    [SerializeField] InteractableMoviePlayer moviePlayer = null;
+
     // public Transform PresentationCameraTransform{ get{ return presentationCameraTransform; } }
 
     
@@ -18,7 +20,10 @@ public class PresentationInteractItem : InteractableItemBase
 
     void Start()
     {
-        
+        AppGameManager.Instance.xButtonEvent.AddListener( OnHtmlXButtonClicked );
+
+        presentationTransition.gameObject.SetActive( true );
+        presentationTransition.TransitionOut( null, false, true, false );
     }
 
     void Update()
@@ -56,12 +61,14 @@ public class PresentationInteractItem : InteractableItemBase
         {
             UiUtility.SetRectTransformStretch( presentationRect, 20f, Screen.height / 5f, 20f, 20f );
         }
-        presentationTransition.TransitionIn();
+        presentationTransition.TransitionIn( null, false, true );
 
         AppGameManager.Instance.CurrentLock.Move = true;
         AppGameManager.Instance.CurrentLock.Rotation = true;
         AppGameManager.Instance.CurrentLock.Click = true;
         AppGameManager.Instance.CurrentLock.Look = true;
+
+        moviePlayer.OnOpened();
     }
 
     
@@ -81,6 +88,9 @@ public class PresentationInteractItem : InteractableItemBase
         AppGameManager.Instance.CurrentLock.Rotation = false;
         AppGameManager.Instance.CurrentLock.Click = false;
         AppGameManager.Instance.CurrentLock.Look = false;
+
+        moviePlayer.Pause();
+        moviePlayer.SeekTime( 0 );
     }
 
     
@@ -108,5 +118,27 @@ public class PresentationInteractItem : InteractableItemBase
                 }
             }
         }
+    }
+
+    public void OnPlayMovieButtonClicked( float time )
+    {
+        if( moviePlayer.Video.isPlaying == true )
+        {
+            moviePlayer.Pause();
+        }
+        else
+        {            
+            moviePlayer.Play( time );
+        }
+    }
+
+    void OnHtmlXButtonClicked()
+    {
+        // Debug.Log( "UnityちゃんのXButtonイベント" );
+
+        // moviePlayer.SetMute( false );
+        // moviePlayer.Play();
+
+        // AppGameManager.Instance.AddLog( "Unity Chan XLog" );
     }
 }

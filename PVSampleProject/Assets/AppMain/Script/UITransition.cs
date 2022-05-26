@@ -21,9 +21,17 @@ public class UITransition : MonoBehaviour
     [SerializeField] Parameter parameter = new Parameter();
 
     public bool IsOpen{ get; private set; } = false;
+    public bool IsTransition{ get; private set; } = false;
 
     RectTransform rect = null;
     CanvasGroup canvasGroup = null;
+
+    Sequence currentSeq = null;
+
+    bool isInit = false;
+
+    Vector2 defaultAnchoredPosition = Vector3.zero;
+    float defaultAlpha = 1f;
 
     public RectTransform Rect
     {
@@ -45,10 +53,25 @@ public class UITransition : MonoBehaviour
     
     void Start()
     {
+        if( IsTransition == false )
+        {
+            IsOpen = ( CanvasGroup.alpha != 0 );
+        }
+    }
+
+    void Init()
+    {
+        if( isInit == false )
+        {
+            defaultAnchoredPosition = Rect.anchoredPosition;
+            defaultAlpha = CanvasGroup.alpha;
+
+            isInit = true;
+        }
     }
 
 
-    public void TransitionIn( UnityAction completedAction = null, bool isImmediate = false )
+    public void TransitionIn( UnityAction completedAction = null, bool isImmediate = false, bool? blockRayCasts = null )
     {
         gameObject.SetActive( true );
         if( isImmediate == true )
@@ -57,18 +80,28 @@ public class UITransition : MonoBehaviour
             return;
         }
 
-        var seq = DOTween.Sequence();
+        IsTransition = true;
 
-        var _goal = Rect.anchoredPosition;
-        var _start = _goal + parameter.InDirection;
+        Init();
+
+        if( currentSeq != null )
+        {
+            DOTween.Kill( currentSeq );
+            currentSeq = null;
+        }
+
+        currentSeq = DOTween.Sequence();
+
+        var _goal = defaultAnchoredPosition;//Rect.anchoredPosition;
+        var _start = ( Rect.anchoredPosition == defaultAnchoredPosition ) ? _goal + parameter.InDirection : Rect.anchoredPosition;
         Rect.anchoredPosition = _start;
 
-        seq.Append
+        currentSeq.Append
         (
             Rect.DOLocalMoveX( _goal.x, transitionTime )
         );
 
-        seq.Join
+        currentSeq.Join
         (
             Rect.DOLocalMoveY( _goal.y, transitionTime )
         );
@@ -76,65 +109,96 @@ public class UITransition : MonoBehaviour
         if( parameter.IsAlpha == true )
         {
             CanvasGroup.alpha = 0;
-            seq.Join
+            currentSeq.Join
             (            
                 CanvasGroup.DOFade( 1f, transitionTime )
             );
         }
 
-        seq        
+        currentSeq        
         .SetEase( parameter.Ease )
         .SetLink( gameObject )
         .OnComplete( () => 
         {
             completedAction?.Invoke();
+
+            Rect.anchoredPosition = defaultAnchoredPosition;
             IsOpen = true;
+            IsTransition = false;
+            SetBlockRayCast( blockRayCasts );
         } );
     }
 
-    public void TransitionOut( UnityAction completedAction = null, bool isImmediate = false )
+    public void TransitionOut( UnityAction completedAction = null, bool isSetInactive = true, bool isImmediate = false, bool? blockRayCasts = null )
     {
         if( isImmediate == true )
         {
-            gameObject.SetActive( false );
-            CanvasGroup.alpha = 1;
+            if( isSetInactive == true ) gameObject.SetActive( false );
+            CanvasGroup.alpha = 0;
             return;
         }
 
-        var seq = DOTween.Sequence();
+        IsTransition = true;
+
+        Init();
+
+        if( currentSeq != null )
+        {
+            DOTween.Kill( currentSeq );
+            currentSeq = null;
+        }
+
+        currentSeq = DOTween.Sequence();
 
         var _start = Rect.anchoredPosition;
-        var _goal = Rect.anchoredPosition + parameter.OutDirection;
+        var _goal = defaultAnchoredPosition + parameter.OutDirection;
 
-        seq.Append
+        currentSeq.Append
         (
             Rect.DOLocalMoveX( _goal.x, transitionTime )
         );
 
-        seq.Join
+        currentSeq.Join
         (
             Rect.DOLocalMoveY( _goal.y, transitionTime )
         );
         
         if( parameter.IsAlpha == true )
         {
-            seq.Join
+            currentSeq.Join
             (            
                 CanvasGroup.DOFade( 0, transitionTime )
             );
         }
 
-        seq        
+        currentSeq        
         .SetEase( parameter.Ease )
         .SetLink( gameObject )
         .OnComplete( () => 
         {
-            gameObject.SetActive( false );
-            CanvasGroup.alpha = 1;
-            Rect.anchoredPosition = _start;
+            CanvasGroup.alpha = 0;            
+            Rect.anchoredPosition = defaultAnchoredPosition;
+            if( isSetInactive == true )
+            {
+                gameObject.SetActive( false );
+                CanvasGroup.alpha = 1;
+            }
+
             completedAction?.Invoke();
 
             IsOpen = false;
+            IsTransition = false;
+            SetBlockRayCast( blockRayCasts );
         } );
+
+        
+    }
+
+    void SetBlockRayCast( bool? isBlockRaycasts )
+    {
+        if( isBlockRaycasts != null )
+        {
+            CanvasGroup.blocksRaycasts = (bool)isBlockRaycasts;
+        }
     }
 }

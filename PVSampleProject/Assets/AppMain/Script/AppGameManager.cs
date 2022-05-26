@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
 using System.Runtime.InteropServices;
-using DG.Tweening;
+using UnityEngine.Video;
 
 public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
 {
@@ -90,6 +90,8 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     public PresentationEvent PresentationStartEvent = new PresentationEvent();
     public UnityEvent PresentationEndEvent = new UnityEvent();
 
+    public UnityEvent xButtonEvent = new UnityEvent();
+
     // 移動用のクリック開始位置.
     Vector3? startMoveMousePosition = null;
 
@@ -106,6 +108,8 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     // [SerializeField] GameObject testWindow = null;
 
     // [SerializeField] GameObject popupTest = null;
+
+    [SerializeField] Text log3 = null;
 
 
 
@@ -704,6 +708,27 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     public void ChangeScreenHeight( int height )
     {
         Debug.Log( "HTMLからのコール Hight : " + height );
+    }
+
+
+    [SerializeField] List<AppMoviePlayer> moviePlayers = new List<AppMoviePlayer>();
+
+    public void OnHtmlXButtonClicked()
+    {
+        Debug.Log( "HTMLのXボタンクリック" );
+        log3.text += "XButton\n";
+        xButtonEvent?.Invoke();
+
+
+        foreach( var movie in moviePlayers )
+        {
+            movie.HtmlInit();
+        }
+    }
+
+    public void AddLog( string log )
+    {
+        log3.text += log + "\n";
     }
 
 }
