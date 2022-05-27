@@ -35,17 +35,46 @@ body { padding: 0; margin: 0; overflow: hidden }
     
 }
 
-#xButton
+button#initButton img
 {
-    width: 150px; height: 150px;
+    width: 100%; 
+    height: 100%;
+}
+
+#initButton
+{
+    width: 80%; height: 80%;
     position: absolute; 
-    left: 90%; 
-    top: 10%; 
+    left: 50%; 
+    top: 50%; 
     transform: translate(-50%, -50%); 
     z-index: 10; 
     pointer-events: auto ;
-    display: block;
+    display: none;
+    /* background-image:url('initImage.png'); */
+
+    padding:0;
+    margin:0;
+    background:none;
+    border:0;
+    font-size:0;
+    line-height:0;
+    overflow:visible;
+    cursor:pointer;
+    
 }
+
+/* #initButtonImage
+{
+    background-image:url('initImage.png');
+    background-repeat: no-repeat;
+    /* display:inline-block; */
+    /* object-fit: cover; */
+    /* margin-top:2px; */
+    /* width:80%;
+    height:80%; 
+}  */
+
 
 
 #linkButton

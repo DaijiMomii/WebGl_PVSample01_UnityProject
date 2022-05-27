@@ -5,6 +5,8 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 using System.Runtime.InteropServices;
 using UnityEngine.Video;
+using UniRx;
+using Cysharp.Threading.Tasks;
 
 public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
 {
@@ -92,6 +94,8 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
 
     public UnityEvent xButtonEvent = new UnityEvent();
 
+    public FieldVideoController FieldVideoController{ get{ return fieldVideoController; } }
+
     // 移動用のクリック開始位置.
     Vector3? startMoveMousePosition = null;
 
@@ -100,6 +104,7 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     InteractableItemBase currentCenterRayHit = null;
 
 
+    [SerializeField] FieldVideoController fieldVideoController = null;
     
     // DEBUG.
     [SerializeField] Text platformText = null;
@@ -110,6 +115,7 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     // [SerializeField] GameObject popupTest = null;
 
     [SerializeField] Text log3 = null;
+    // [SerializeField] List<VideoPlayer> fieldVideoPlayers = new List<VideoPlayer>();
 
 
 
@@ -711,24 +717,45 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     }
 
 
-    [SerializeField] List<AppMoviePlayer> moviePlayers = new List<AppMoviePlayer>();
+    public void OnAppStarted()
+    {
+        Debug.Log( "<<  WebGl App 開始.  >>" );
+        AddLog( " WebGl App Start" );
 
-    public void OnHtmlXButtonClicked()
+        AppStop();
+    }
+
+    public void OnHtmlInitButtonClicked()
     {
         Debug.Log( "HTMLのXボタンクリック" );
         log3.text += "XButton\n";
         xButtonEvent?.Invoke();
 
 
-        foreach( var movie in moviePlayers )
-        {
-            movie.HtmlInit();
-        }
+        // foreach( var movie in moviePlayers )
+        // {
+        //     movie.HtmlInit();
+        // }
+
+        fieldVideoController.OnHtmlInit();
+        AppRestart();
     }
 
     public void AddLog( string log )
     {
         log3.text += log + "\n";
     }
+
+
+
+
+    // void SetVideo( VideoPlayer video, string fileName )
+    // {
+    //     video.source = VideoSource.Url;
+    //     video.url = Application.streamingAssetsPath + "/" + "Movie" + "/pfDemo.mp4";// + fileName;
+
+    //     video.Prepare();
+    //     video.Play();
+    // }
 
 }

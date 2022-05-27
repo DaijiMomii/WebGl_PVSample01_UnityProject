@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class PresentationInteractItem : InteractableItemBase  
 {
@@ -10,9 +11,8 @@ public class PresentationInteractItem : InteractableItemBase
     [SerializeField] UITransition presentationTransition = null;
     [SerializeField] RectTransform presentationRect = null;
 
-    [SerializeField] InteractableMoviePlayer moviePlayer = null;
-
-    // public Transform PresentationCameraTransform{ get{ return presentationCameraTransform; } }
+    public UnityEvent ItemClickedEvent = new UnityEvent();
+    public UnityEvent PresentationClosedEvent = new UnityEvent();
 
     
     List<( int, Transform )> childrenTransformWithLayer = new List<( int, Transform )>();
@@ -20,8 +20,6 @@ public class PresentationInteractItem : InteractableItemBase
 
     void Start()
     {
-        AppGameManager.Instance.xButtonEvent.AddListener( OnHtmlXButtonClicked );
-
         presentationTransition.gameObject.SetActive( true );
         presentationTransition.TransitionOut( null, false, true, false );
     }
@@ -68,7 +66,7 @@ public class PresentationInteractItem : InteractableItemBase
         AppGameManager.Instance.CurrentLock.Click = true;
         AppGameManager.Instance.CurrentLock.Look = true;
 
-        moviePlayer.OnOpened();
+        ItemClickedEvent?.Invoke();
     }
 
     
@@ -81,16 +79,14 @@ public class PresentationInteractItem : InteractableItemBase
         }
         
         AppGameManager.Instance.EndPresentation();
-        // presentation.gameObject.SetActive( false );
-        presentationTransition.TransitionOut();
+        presentationTransition.TransitionOut( null, false, false, false );
 
         AppGameManager.Instance.CurrentLock.Move = false;
         AppGameManager.Instance.CurrentLock.Rotation = false;
         AppGameManager.Instance.CurrentLock.Click = false;
         AppGameManager.Instance.CurrentLock.Look = false;
 
-        moviePlayer.Pause();
-        moviePlayer.SeekTime( 0 );
+        PresentationClosedEvent?.Invoke();
     }
 
     
@@ -118,27 +114,5 @@ public class PresentationInteractItem : InteractableItemBase
                 }
             }
         }
-    }
-
-    public void OnPlayMovieButtonClicked( float time )
-    {
-        if( moviePlayer.Video.isPlaying == true )
-        {
-            moviePlayer.Pause();
-        }
-        else
-        {            
-            moviePlayer.Play( time );
-        }
-    }
-
-    void OnHtmlXButtonClicked()
-    {
-        // Debug.Log( "UnityちゃんのXButtonイベント" );
-
-        // moviePlayer.SetMute( false );
-        // moviePlayer.Play();
-
-        // AppGameManager.Instance.AddLog( "Unity Chan XLog" );
     }
 }

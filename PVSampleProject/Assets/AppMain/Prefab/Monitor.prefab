@@ -121,8 +121,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a516e458cda38c64baf6d3b5dae9a497, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  movieFolderPath: Movie
-  streamingAssetsFileName: pfDemo.mp4
+  fileName: pfDemo.mp4
+  raw: {fileID: 1112746926499294171}
 --- !u!1 &1112746926689465142
 GameObject:
   m_ObjectHideFlags: 0

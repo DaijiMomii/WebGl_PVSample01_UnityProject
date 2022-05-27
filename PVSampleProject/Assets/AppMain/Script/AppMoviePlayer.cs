@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Video;
 using UnityEngine.UI;
+using UniRx;
+using Cysharp.Threading.Tasks;
+using UnityEngine.Events;
 
 [RequireComponent( typeof(VideoPlayer) )]
 [RequireComponent( typeof(RawImage) )]
@@ -47,10 +50,18 @@ public class AppMoviePlayer : MonoBehaviour
         // Video.url = Application.streamingAssetsPath + "/" + movieFolderPath + "/" + streamingAssetsFileName;
 
         StartCoroutine( Init() );
+        ChangeVideoTexture( gameObject, SetVideo );
     }
 
     protected virtual void Update()
     {
+    }
+
+    void SetVideo()
+    {
+        if( Video.texture == null ) return;
+
+
     }
 
     void SetUrl()
@@ -65,6 +76,7 @@ public class AppMoviePlayer : MonoBehaviour
 
     protected virtual IEnumerator Init()
     {
+        AppGameManager.Instance.AddLog( "Init1" );
         SetUrl();
         Video.Prepare(); 
         yield return new WaitUntil( () => Video.texture != null );
@@ -81,20 +93,23 @@ public class AppMoviePlayer : MonoBehaviour
         }
 
         isInit = true;
+        AppGameManager.Instance.AddLog( "Init2" );
     }
+
 
     public void HtmlInit()
     {
         Debug.Log( "HTMLのInit" );
         AppGameManager.Instance.AddLog( "HTMLの動画Init開始" );
-        // StartCoroutine( HtmlInitCor() );
-
+      
         AppGameManager.Instance.AddLog( "IsInit = " + isInit );
 
         Video.SetDirectAudioMute( 0, false );  
         float _vol = ( isMute == true ) ? 0 : 1f;
         Video.SetDirectAudioVolume( 0, _vol );      
         Video.Play();  
+        Video.Pause();
+        Video.frame = 2;
     }
     // IEnumerator HtmlInitCor()
     // {
@@ -136,5 +151,12 @@ public class AppMoviePlayer : MonoBehaviour
         }
 
         Raw.rectTransform.sizeDelta = _current;
+    }
+
+    void ChangeVideoTexture( GameObject go, UnityAction action )
+    {
+        this.ObserveEveryValueChanged( x => Video.texture )
+        .Subscribe( x => action?.Invoke() )
+        .AddTo( go );
     }
 }
