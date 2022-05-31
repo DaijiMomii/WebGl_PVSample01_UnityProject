@@ -7,7 +7,7 @@ Shader "UnityChan/Eye"
 		
 		_MainTex ("Diffuse", 2D) = "white" {}
 		_FalloffSampler ("Falloff Control", 2D) = "white" {}
-		_RimLightSampler ("RimLight Control", 2D) = "white" {}
+		// _RimLightSampler ("RimLight Control", 2D) = "white" {}
 	}
 
 	SubShader

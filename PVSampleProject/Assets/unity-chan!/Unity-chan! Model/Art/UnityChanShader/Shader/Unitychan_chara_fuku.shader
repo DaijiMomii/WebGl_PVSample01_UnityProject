@@ -9,7 +9,7 @@ Shader "UnityChan/Clothing"
 		
 		_MainTex ("Diffuse", 2D) = "white" {}
 		_FalloffSampler ("Falloff Control", 2D) = "white" {}
-		_RimLightSampler ("RimLight Control", 2D) = "white" {}
+		// _RimLightSampler ("RimLight Control", 2D) = "white" {}
 		_SpecularReflectionSampler ("Specular / Reflection Mask", 2D) = "white" {}
 		_EnvMapSampler ("Environment Map", 2D) = "" {} 
 		_NormalMapSampler ("Normal Map", 2D) = "" {} 

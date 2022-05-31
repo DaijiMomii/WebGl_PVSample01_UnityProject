@@ -7,6 +7,8 @@ using System.Runtime.InteropServices;
 using UnityEngine.Video;
 using UniRx;
 using Cysharp.Threading.Tasks;
+using System.IO;
+using UnityEngine.Networking;
 
 public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
 {
@@ -91,20 +93,26 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     public class PresentationEvent : UnityEvent<PresentationInteractItem>{}
     public PresentationEvent PresentationStartEvent = new PresentationEvent();
     public UnityEvent PresentationEndEvent = new UnityEvent();
-
     public UnityEvent xButtonEvent = new UnityEvent();
 
-    public FieldVideoController FieldVideoController{ get{ return fieldVideoController; } }
+    public class ScreenEvent : UnityEvent<Vector2>{}
+    public ScreenEvent ScreenSizeChanged = new ScreenEvent();
+
+    public AppVideoController AppVideoController{ get{ return appVideoController; } }
+
+    public string Platform{ get; private set; } = "none";
 
     // 移動用のクリック開始位置.
     Vector3? startMoveMousePosition = null;
+
+    Vector2 currentScreen = Vector2.zero;
 
 
     InteractableItemBase currentCursorRayHit = null;
     InteractableItemBase currentCenterRayHit = null;
 
 
-    [SerializeField] FieldVideoController fieldVideoController = null;
+    [SerializeField] AppVideoController appVideoController = null;
     
     // DEBUG.
     [SerializeField] Text platformText = null;
@@ -124,12 +132,62 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
         if( Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.OSXEditor )
         {
             platformText.text = "Editor";
+            Platform = "Editor";
         }
         else
         {            
             DeviceInformation();
             // platformText.text = "---";
         }
+
+        if( currentScreen.x == 0 ) currentScreen.x = Screen.width;
+        if( currentScreen.y == 0 ) currentScreen.y = Screen.height;
+
+
+        int _data = 0;
+        if( PlayerPrefs.HasKey( "TestSaveData" ) == true )
+        {
+            int _current = PlayerPrefs.GetInt( "TestSaveData" );
+            _current++;
+            PlayerPrefs.SetInt( "TestSaveData", _current );
+            _data = _current;
+        }
+        else
+        {
+            PlayerPrefs.SetInt( "TestSaveData", 0 );
+            _data = 0;
+        }
+
+        // Debug.Log( "SaveData @@@ " + _data );
+        // platformText.text += " : " + _data;
+        
+        // var _jsonS = new JsonSample();
+        // _jsonS.Name = "Sample@";
+        // var _json = JsonUtility.ToJson( _jsonS );
+        // Debug.Log( _json );
+
+
+
+        // var _path = Application.streamingAssetsPath + "/Sample.json";
+        // string data = File.ReadAllText(_path);
+        // // var request = UnityWebRequest.Get( _path );
+        // // await request.SendWebRequest();
+        // // var jsonText = request.downloadHandler.text;
+        // Debug.Log( "@ " + data );
+        // platformText.text += "\nb@ : " + data;
+        // var _jsonSample = JsonUtility.FromJson<JsonSample>( data );
+        // _jsonSample.Name += "A";
+        // _jsonSample.Int ++;
+        // var _newJsonText = JsonUtility.ToJson( _jsonSample );
+        // Debug.Log( "@@ " + _newJsonText );
+       
+
+        // // 書き込み
+        // // 書き込み
+        // File.WriteAllText(_path, _newJsonText);
+
+        // Debug.Log( "@@@ " + _newJsonText );
+        // platformText.text += "\na@ : " + _newJsonText;
 
     }
 
@@ -696,6 +754,7 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     {
         Debug.Log( "Platform : " + platformKey );
         platformText.text = platformKey;
+        Platform = platformKey;
     }
     
 
@@ -709,11 +768,19 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     public void ChangeScreenWidth( int width )
     {
         Debug.Log( "HTMLからのコール Width : " + width );
+        currentScreen.x = width;
+        ScreenSizeChanged?.Invoke( currentScreen );
+
+        platformText.text = Platform + " / " + currentScreen;
     }
 
     public void ChangeScreenHeight( int height )
     {
         Debug.Log( "HTMLからのコール Hight : " + height );
+        currentScreen.y = height;
+        ScreenSizeChanged?.Invoke( currentScreen );
+
+        platformText.text = Platform + " / " + currentScreen;
     }
 
 
@@ -737,7 +804,7 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
         //     movie.HtmlInit();
         // }
 
-        fieldVideoController.OnHtmlInit();
+        appVideoController.OnHtmlInit();
         AppRestart();
     }
 

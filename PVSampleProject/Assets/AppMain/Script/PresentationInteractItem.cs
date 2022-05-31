@@ -5,10 +5,13 @@ using UnityEngine.Events;
 
 public class PresentationInteractItem : InteractableItemBase  
 {
+    // プレゼン時画面横長の時にカメラがくる位置.
     [SerializeField] Transform presentationCameraTransformHorizontal = null;
+    // プレゼン時画面縦長の時にカメラがくる位置.
     [SerializeField] Transform presentationCameraTransformVertical = null;
-
+    // プレゼントランジション.
     [SerializeField] UITransition presentationTransition = null;
+    // プレゼン画面レクト.
     [SerializeField] RectTransform presentationRect = null;
 
     public UnityEvent ItemClickedEvent = new UnityEvent();

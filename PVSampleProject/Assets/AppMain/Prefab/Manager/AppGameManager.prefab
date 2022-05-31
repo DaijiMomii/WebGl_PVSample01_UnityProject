@@ -448,9 +448,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 217c7e60747cd8442b4818b3f63501ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  videoStreamingAssetsFileNames:
-  - pfDemo.mp4
-  - PV_demo_center_pre_01.mp4
+  fieldVideoStreamingAssetsFileNames: []
+  uniqueVideoStreamingAssetsFildName: []
   fieldVideoPlayerPrefab: {fileID: 2034425213949397600, guid: 269ed53572c06dd46a4033528e16c811, type: 3}
   testRaws: []
 --- !u!1 &3565053448615216231
@@ -1430,12 +1429,9 @@ MonoBehaviour:
   xButtonEvent:
     m_PersistentCalls:
       m_Calls: []
-  fieldVideoController: {fileID: 6282587577878629014}
+  appVideoController: {fileID: 6282587577878629014}
   platformText: {fileID: 7088581809623349940}
-  log3: {fileID: 0}
-  fieldVideoPlayers:
-  - {fileID: 0}
-  moviePlayers: []
+  log3: {fileID: 7218222598936456497}
 --- !u!1 &7088581809085685635
 GameObject:
   m_ObjectHideFlags: 0
