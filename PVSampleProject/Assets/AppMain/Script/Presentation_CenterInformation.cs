@@ -32,7 +32,7 @@ public class Presentation_CenterInformation : MonoBehaviour
 
 
     // 動画再生管理クラス.
-    AppVideoPlayer video = null;
+    PvVideoPlayer video = null;
 
     void Start()
     {
@@ -87,7 +87,7 @@ public class Presentation_CenterInformation : MonoBehaviour
         CloseStartMenu();
     }
 
-    void OnPresentationStarted( PresentationInteractItem item )
+    void OnPresentationStarted( InteractItem_Presentation item )
     {
         AppGameManager.Instance.AppVideoController.SetReadyUniqueVideo( movie.FileName, 2 );
         OpenStartMenu();

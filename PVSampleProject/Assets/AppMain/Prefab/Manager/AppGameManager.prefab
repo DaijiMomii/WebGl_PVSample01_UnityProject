@@ -107,7 +107,7 @@ RectTransform:
   m_Children:
   - {fileID: 8839642621695486373}
   m_Father: {fileID: 7088581808938128075}
-  m_RootOrder: 2
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -434,7 +434,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 7088581808938128075}
-  m_RootOrder: 4
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6282587577878629014
 MonoBehaviour:
@@ -729,6 +729,55 @@ MonoBehaviour:
     InDirection: {x: 0, y: 0}
     OutDirection: {x: 0, y: 0}
     Ease: 1
+--- !u!1 &5427589511730454586
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 441119090145193920}
+  - component: {fileID: 2446759269102002293}
+  m_Layer: 0
+  m_Name: SkyDome
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &441119090145193920
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5427589511730454586}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 7088581808938128075}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2446759269102002293
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5427589511730454586}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: adaad1c55e64c6643b580c007dd3d2f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  StartSkyDomeEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  FinishSkyDomeEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &5483339290481215844
 GameObject:
   m_ObjectHideFlags: 0
@@ -911,7 +960,7 @@ RectTransform:
   - {fileID: 7870535249383992913}
   - {fileID: 308468728525685724}
   m_Father: {fileID: 7088581808938128075}
-  m_RootOrder: 1
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -1384,10 +1433,11 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 7546380495200494537}
+  - {fileID: 1686749835495081601}
+  - {fileID: 441119090145193920}
   - {fileID: 7088581808309651517}
   - {fileID: 1340882238976259842}
   - {fileID: 7088581810062339240}
-  - {fileID: 1686749835495081601}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1410,6 +1460,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   player: {fileID: 0}
+  skyDome: {fileID: 2446759269102002293}
   stickBgRect: {fileID: 7088581808884798768}
   stickImageRect: {fileID: 7088581810325672525}
   bgImage: {fileID: 7088581808830292034}
@@ -1431,7 +1482,6 @@ MonoBehaviour:
       m_Calls: []
   appVideoController: {fileID: 6282587577878629014}
   platformText: {fileID: 7088581809623349940}
-  log3: {fileID: 7218222598936456497}
 --- !u!1 &7088581809085685635
 GameObject:
   m_ObjectHideFlags: 0
@@ -2480,7 +2530,7 @@ RectTransform:
   - {fileID: 7088581808436383175}
   - {fileID: 6190877727912817821}
   m_Father: {fileID: 7088581808938128075}
-  m_RootOrder: 3
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}

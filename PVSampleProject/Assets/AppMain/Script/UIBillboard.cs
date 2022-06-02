@@ -32,12 +32,14 @@ public class UIBillboard : MonoBehaviour
 
     void Billboard()
     {
+        if( Camera.main == null ) return;
         // transform.LookAt( Camera.main.transform.position );
         transform.forward = ( Camera.main.transform.position - transform.position ).normalized;
     }
 
     void FixedYBillboard()
     {
+        if( Camera.main == null ) return;
         var _dir = ( Camera.main.transform.position - transform.position ).normalized;
         _dir.y = 0;
         transform.forward = _dir;        
@@ -45,12 +47,14 @@ public class UIBillboard : MonoBehaviour
 
     void BackBillboard()
     {
+        if( Camera.main == null ) return;
         var _dir = ( transform.position - Camera.main.transform.position ).normalized;
         transform.forward = _dir;      
     }
 
     void FixedYBackBillboard()
     {
+        if( Camera.main == null ) return;
         var _dir = ( transform.position - Camera.main.transform.position ).normalized;
         _dir.y = 0;
         transform.forward = _dir;      

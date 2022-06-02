@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ShowImageInteractItem : InteractableItemBase
+public class InteractItem_ShowImage : InteractableItemBase
 {
     [SerializeField] UITransition imageTransition = null;
 

@@ -64,6 +64,54 @@ mergeInto(LibraryManager.library,
     window.open( Pointer_stringify( url ) );
   },
 
+  OpenMenu: function()
+  {
+    window.alert( "Open" );
+    var menu = document.querySelector("#menu");
+    menu.style.display = "flex";
+  },
+
+  CloseMenu: function()
+  {
+    window.alert( "Close" );
+    var menu = document.querySelector("#menu");
+    menu.style.display = "none";
+  },
+
+  SetMenuState: function( state )
+  {
+    var soundButton = document.querySelector("#soundButton");
+    var muteImg = document.getElementById("buttonImageMute");
+    var _state = Pointer_stringify( state )
+
+    if( _state == "Mute" || _state == "mute" )
+    {
+      // Mute中（MenuボタンとMute解除ボタン）.
+      muteImg.src = "TemplateData/muteButton.png";
+      soundButton.style.display = "none";
+    }
+    else
+    {
+      // Muteじゃない（Menuボタン、音量ボタン、Muteボタン）.
+      muteImg.src = "TemplateData/muteOff.png";
+      soundButton.style.display = "block";
+    }
+
+  },
+
+  SetMenuIconDisplay: function( isDisplay )
+  {
+    var menuButton = document.querySelector("#menuButton");
+    if( isDisplay == true ) 
+    {
+      menuButton.style.display = "block"
+    }
+    else
+    {
+      menuButton.style.display = "none"
+    }
+  },
+
 
 
 

@@ -18,7 +18,7 @@ public class MovieMonitor : MonoBehaviour
 
     bool isPlayingOnPresentationStarted = true;
 
-    AppVideoPlayer video = null;
+    PvVideoPlayer video = null;
 
     void Start()
     {
@@ -33,7 +33,7 @@ public class MovieMonitor : MonoBehaviour
     {
     }
 
-    void OnVideoInitCompleted( AppVideoPlayer videoPlayer )
+    void OnVideoInitCompleted( PvVideoPlayer videoPlayer )
     {
         if( fileName != videoPlayer.FileName ) return;
 
@@ -45,7 +45,7 @@ public class MovieMonitor : MonoBehaviour
         SetSize();
     }
 
-    public void OnPresentationStart( PresentationInteractItem item )
+    public void OnPresentationStart( InteractItem_Presentation item )
     {                
     }
 

@@ -7,7 +7,7 @@ using UnityEngine.Events;
 using UniRx;
 using Cysharp.Threading.Tasks;
 
-public class AppVideoPlayer : MonoBehaviour
+public class PvVideoPlayer : MonoBehaviour
 {
     public enum VideoType
     {
@@ -33,7 +33,7 @@ public class AppVideoPlayer : MonoBehaviour
 
 
 
-    public class PreparedCompletedEvent : UnityEvent<AppVideoPlayer>{}
+    public class PreparedCompletedEvent : UnityEvent<PvVideoPlayer>{}
     public PreparedCompletedEvent PreparedCompleted = new PreparedCompletedEvent();
 
     public List<RawImage> rawList = new List<RawImage>();

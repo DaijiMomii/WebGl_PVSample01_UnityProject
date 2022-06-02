@@ -1,20 +1,121 @@
-body { padding: 0; margin: 0; overflow: hidden }
-#unity-container { position: absolute }
+body
+{ 
+    padding: 0; 
+    margin: 0; 
+    overflow: hidden 
+}
+
+#unity-container 
+{ 
+    position: absolute 
+}
+
 /* #unity-container.unity-desktop { left: 50%; top: 50%; transform: translate(-50%, -50%) } */
-#unity-container.unity-desktop{ width: 100%; height: 100vh; }
-#unity-container.unity-mobile { width: 100%; height: 100% }
-#unity-canvas { width: 100%; height: 100vh; background: {{{ BACKGROUND_COLOR }}} }
-.unity-mobile #unity-canvas { width: 100%; height: 100% }
-#unity-loading-bar { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: none }
-#unity-logo { width: 154px; height: 130px; background: url('unity-logo-{{{ SPLASH_SCREEN_STYLE.toLowerCase() }}}.png') no-repeat center }
-#unity-progress-bar-empty { width: 141px; height: 18px; margin-top: 10px; background: url('progress-bar-empty-{{{ SPLASH_SCREEN_STYLE.toLowerCase() }}}.png') no-repeat center }
-#unity-progress-bar-full { width: 0%; height: 18px; margin-top: 10px; background: url('progress-bar-full-{{{ SPLASH_SCREEN_STYLE.toLowerCase() }}}.png') no-repeat center }
-#unity-footer { position: relative }
-.unity-mobile #unity-footer { display: none }
-#unity-webgl-logo { float:left; width: 204px; height: 38px; background: url('webgl-logo.png') no-repeat center }
-#unity-build-title { float: right; margin-right: 10px; line-height: 38px; font-family: arial; font-size: 18px }
-#unity-fullscreen-button { float: right; width: 38px; height: 38px; background: url('fullscreen-button.png') no-repeat center }
-#unity-mobile-warning { position: absolute; left: 50%; top: 5%; transform: translate(-50%); background: white; padding: 10px; display: none }
+
+#unity-container.unity-desktop
+{ 
+    width: 100%; 
+    height: 100vh; 
+}
+
+#unity-container.unity-mobile 
+{ 
+    width: 100%; 
+    height: 100% 
+}
+
+#unity-canvas 
+{ 
+    width: 100%; 
+    height: 100vh; 
+    background: {{{ BACKGROUND_COLOR }}} 
+}
+
+.unity-mobile #unity-canvas 
+{ 
+    width: 100%; 
+    height: 100% 
+}
+
+#unity-loading-bar 
+{ 
+    position: absolute;
+    left: 50%; 
+    top: 50%; 
+    transform: translate(-50%, -50%); 
+    display: none 
+}
+
+#unity-logo 
+{ 
+    width: 154px; 
+    height: 130px; 
+    background: url('unity-logo-{{{ SPLASH_SCREEN_STYLE.toLowerCase() }}}.png') no-repeat center 
+}
+
+#unity-progress-bar-empty 
+{ 
+    width: 141px; 
+    height: 18px; 
+    margin-top: 10px; 
+    background: url('progress-bar-empty-{{{ SPLASH_SCREEN_STYLE.toLowerCase() }}}.png') no-repeat center 
+}
+
+#unity-progress-bar-full 
+{ 
+    width: 0%; 
+    height: 18px; 
+    margin-top: 10px; 
+    background: url('progress-bar-full-{{{ SPLASH_SCREEN_STYLE.toLowerCase() }}}.png') no-repeat center 
+}
+
+#unity-footer 
+{ 
+    position: relative
+}
+
+.unity-mobile #unity-footer 
+{ 
+    display: none 
+}
+
+#unity-webgl-logo 
+{ 
+    float:left; 
+    width: 204px; 
+    height: 38px; 
+    background: url('webgl-logo.png') no-repeat center 
+}
+
+#unity-build-title 
+{ 
+    float: right; 
+    margin-right: 10px; 
+    line-height: 38px; 
+    font-family: arial; 
+    font-size: 18px 
+}
+
+#unity-fullscreen-button 
+{ 
+    float: right; 
+    width: 38px; 
+    height: 38px; 
+    background: url('fullscreen-button.png') no-repeat center 
+}
+
+#unity-mobile-warning 
+{ 
+    position: absolute; 
+    left: 50%; 
+    top: 5%; 
+    transform: translate(-50%); 
+    background: white; 
+    padding: 10px; 
+    display: none 
+}
+
+
 
 
 
@@ -22,17 +123,65 @@ body { padding: 0; margin: 0; overflow: hidden }
 { 
     pointer-events: none; 
 }
+
 #startButton
 { 
-    width: 200px; height: 80px;
+    width: 200px; 
+    height: 80px;
     position: absolute; 
-    left: 10%; 
-    top: 10%; 
+    left: 50%; 
+    top: 35%; 
     transform: translate(-50%, -50%); 
     z-index: 10; 
     pointer-events: auto ;
-    display: block;
+    display: block;    
+}
+
+#menu
+{
+    left: 5%;
+    top: 0%;
+    position: absolute; 
+    z-index: 10; 
+    display: flex;
+    align-items: center;
+    position: absolute; 
+
+    /* -webkit-text-size-adjust:100%; */    
+    /* background-color:aqua; */
+}
+
+
+#menuButton,
+#soundButton,
+#muteButton
+{
+    height: 100px;
+    width: 100px;
     
+    pointer-events: auto ;
+    display: block;    
+
+    padding:0;
+    margin: 0 0.5% 0 0.5%;
+    background:none;
+    border:0;
+    font-size:0;
+    line-height:0;
+    overflow:visible;
+    cursor:pointer;
+    
+    /* position: absolute;  */
+    /* transform: translate(-50%, -50%);  */
+    /* z-index: 10;  */
+}
+
+
+#buttonImage,
+#buttonImageMute
+{    
+    width: 100%;
+    height: 100%;
 }
 
 button#initButton img

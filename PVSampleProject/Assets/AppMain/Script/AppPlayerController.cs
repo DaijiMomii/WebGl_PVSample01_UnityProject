@@ -35,6 +35,7 @@ public class AppPlayerController : MonoBehaviour
 
     
     [SerializeField] Transform cameraLocalRoot = null;
+    [SerializeField] Camera skyDomeCamera = null;
     [SerializeField] Camera attentionCamera = null;
 
     [SerializeField, Range( 0f, 30f )] float addCameraAnglesRatioInPresentation = 21f;
@@ -58,6 +59,7 @@ public class AppPlayerController : MonoBehaviour
     Rigidbody rigid = null;
     // 垂直回転値.
     float currentEulerRotationV = 0;
+    Camera mainCamera = null;
 
     // List<( int, Transform )> childrenTransformWithLayer = new List<( int, Transform )>();
 
@@ -71,6 +73,10 @@ public class AppPlayerController : MonoBehaviour
         currentEulerRotationV = cameraRootV.localEulerAngles.x;
         AppGameManager.Instance.PresentationStartEvent.AddListener( SetPresentation );
         AppGameManager.Instance.PresentationEndEvent.AddListener( EndPresentation );
+        AppGameManager.Instance.SkyDomeControl.StartSkyDomeEvent.AddListener( OnSkyDomeStarted );
+        AppGameManager.Instance.SkyDomeControl.FinishSkyDomeEvent.AddListener( OnSkyDomeFinished );
+
+        mainCamera = Camera.main;
     }
 
     void Update()
@@ -295,7 +301,7 @@ public class AppPlayerController : MonoBehaviour
     }
 
 
-    public void SetPresentation( PresentationInteractItem presentationItem )
+    public void SetPresentation( InteractItem_Presentation presentationItem )
     {
         attentionCamera.gameObject.SetActive( true );
 
@@ -358,6 +364,36 @@ public class AppPlayerController : MonoBehaviour
         .SetEase( Ease.InOutQuad )
         .SetLink( gameObject );
     }
+
+
+
+    void OnSkyDomeStarted( bool isStarted )
+    {
+        if( isStarted == true )
+        {
+
+        }
+        else
+        {            
+            skyDomeCamera.gameObject.SetActive( true );
+            mainCamera.gameObject.SetActive( false );
+        }
+    }
+
+    void OnSkyDomeFinished( bool isStarted )
+    {
+        if( isStarted == true )
+        {            
+            mainCamera.gameObject.SetActive( true );        
+            skyDomeCamera.gameObject.SetActive( false );
+        }
+        else
+        {            
+        }
+    }
+
+
+
 
 
     public void TestPointerClicked( UnityEngine.EventSystems.BaseEventData eventData )

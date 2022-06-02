@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class PresentationInteractItem : InteractableItemBase  
+public class InteractItem_Presentation : InteractableItemBase  
 {
     // プレゼン時画面横長の時にカメラがくる位置.
     [SerializeField] Transform presentationCameraTransformHorizontal = null;

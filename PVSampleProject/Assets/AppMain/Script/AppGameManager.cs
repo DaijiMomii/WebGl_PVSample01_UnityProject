@@ -22,6 +22,19 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     [DllImport("__Internal")]
     private static extern void OpenUrlNewWindow( string url );
 
+    [DllImport("__Internal")]
+    private static extern void OpenMenu();
+    [DllImport("__Internal")]
+    private static extern void CloseMenu();
+
+    [DllImport("__Internal")]
+    private static extern void SetMenuState( string state );
+
+    [DllImport("__Internal")]
+    private static extern void SetMenuIconDisplay( bool isDisplay );
+
+    
+
 
     // -------------------------------------------------------------------------------------
     /// <summary>
@@ -31,6 +44,11 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     public enum MouseAction
     {
         None, Down, Hold, Up,
+    }
+
+    public enum HtmlMenuState
+    {
+        SoundOn, Mute
     }
 
     // -------------------------------------------------------------------------------------
@@ -54,6 +72,8 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     [SerializeField] LayerMask centerRayMask = default(LayerMask);
     // プレイヤー.
     [SerializeField] AppPlayerController player = null;
+    //
+    [SerializeField] AppSkyDomeControl skyDome = null;
     // 移動用UIの背景レクトトランスフォーム.
     [SerializeField] RectTransform stickBgRect = null;
     // 移動用UIのスティックレクトトランスフォーム.
@@ -69,7 +89,10 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     [SerializeField] UITransition stopWindowTransition = null;
 
 
-
+    // public bool IsOpenHtmlMenu{ get; private set; } = true;
+    public HtmlMenuState CurrentHtmlMenuState{ get; private set; } = HtmlMenuState.Mute;
+    public bool isHtmlMenuOpen{ get; private set; } = true;
+    public bool isHtmlMenu_MenuIconDisplay{ get; private set; } = true;
 
     // 現在のロック状態.
     public Lock CurrentLock = new Lock();
@@ -84,13 +107,14 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     public int CurrentMoveFingerId{ get; set; } = -1;
 
     public Camera SubUiCamera{ get{ return subUiCamera; } }
+    public AppSkyDomeControl SkyDomeControl{ get{ return skyDome; } }
 
     
     public int DefaultLayerNum{ get; } = 0;
     public int AttentionLayerNum{ get; } = 7;
 
 
-    public class PresentationEvent : UnityEvent<PresentationInteractItem>{}
+    public class PresentationEvent : UnityEvent<InteractItem_Presentation>{}
     public PresentationEvent PresentationStartEvent = new PresentationEvent();
     public UnityEvent PresentationEndEvent = new UnityEvent();
     public UnityEvent xButtonEvent = new UnityEvent();
@@ -122,7 +146,7 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
 
     // [SerializeField] GameObject popupTest = null;
 
-    [SerializeField] Text log3 = null;
+    // [SerializeField] Text log3 = null;
     // [SerializeField] List<VideoPlayer> fieldVideoPlayers = new List<VideoPlayer>();
 
 
@@ -651,7 +675,7 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
 
 
 
-    public void SetPresentation( PresentationInteractItem presentationItem )
+    public void SetPresentation( InteractItem_Presentation presentationItem )
     {
         PresentationStartEvent?.Invoke( presentationItem );
     }
@@ -787,30 +811,83 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     public void OnAppStarted()
     {
         Debug.Log( "<<  WebGl App 開始.  >>" );
-        AddLog( " WebGl App Start" );
+        // AddLog( " WebGl App Start" );
 
-        AppStop();
+        // AppStop();
     }
 
     public void OnHtmlInitButtonClicked()
     {
-        Debug.Log( "HTMLのXボタンクリック" );
-        log3.text += "XButton\n";
-        xButtonEvent?.Invoke();
-
-
-        // foreach( var movie in moviePlayers )
-        // {
-        //     movie.HtmlInit();
-        // }
+        Debug.Log( "HTMLのMuteボタンクリック" );
 
         appVideoController.OnHtmlInit();
-        AppRestart();
+        CurrentLock.Click = false;
+        CurrentLock.Look = false;
+        CurrentLock.Move = false;
+        CurrentLock.Rotation = false;
     }
+
 
     public void AddLog( string log )
     {
-        log3.text += log + "\n";
+        // log3.text += log + "\n";
+    }
+
+
+    public void OnMenuButtonClicked()
+    {
+        if( isHtmlMenuOpen == true )
+        {
+            CloseMenu();
+            isHtmlMenuOpen = false;
+        }
+        else
+        {
+            OpenMenu();
+            isHtmlMenuOpen = true;
+        }
+
+    }
+
+    public void OnHtmlMuteButtonClicked()
+    {        
+        appVideoController.OnHtmlInit();
+
+        if( CurrentHtmlMenuState == HtmlMenuState.Mute )
+        {            
+            appVideoController.OnHtmlInit( false );
+            appVideoController.OnHtmlMuteOff();
+
+            SetMenuState( "SoundOn" );
+            CurrentHtmlMenuState = HtmlMenuState.SoundOn;
+        }
+        else if( CurrentHtmlMenuState == HtmlMenuState.SoundOn )
+        {
+            appVideoController.OnHtmlInit( true );
+            appVideoController.OnHtmlMuteOn();
+            
+            SetMenuState( "Mute" );
+            CurrentHtmlMenuState = HtmlMenuState.Mute;
+        }
+        else
+        {
+            // OpenMenu();CurrentHtmlMenuState = HtmlMenuState.Mute;
+            Debug.LogWarning( "ヘッダーメニューが開いていません" );
+        }
+    }
+
+    public void OnHtmlMenuIconDisplay()
+    {
+        if( isHtmlMenu_MenuIconDisplay == true )
+        {
+            SetMenuIconDisplay( false );
+            isHtmlMenu_MenuIconDisplay = false;
+        }
+        else
+        {
+            SetMenuIconDisplay( true );
+            isHtmlMenu_MenuIconDisplay = true;
+        }
     }
 
 

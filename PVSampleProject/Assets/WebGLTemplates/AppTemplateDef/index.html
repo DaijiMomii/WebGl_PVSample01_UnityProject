@@ -11,8 +11,13 @@
 
     <div id="buttons">
       <button id="startButton" type="button">Start</button>
-      <!-- <button id="linkButton" type=“button” onclick="location.href='https://daijimomii.github.io/WebGl_PVSample_Info/'">ページリンク</button> -->
-      <button id="initButton" type="button"><img src="TemplateData/initImage.png" alt="button"/></button>
+      <button id="initButton" type="button"><img src="TemplateData/initImage.png" alt="informationImg"/></button>
+
+      <div id="menu">
+        <button id="menuButton" type="button"><img id="buttonImage" src="TemplateData/menuIcon.png" alt="menuButton"/></button>
+        <button id="soundButton" type="button"><img id="buttonImage" src="TemplateData/soundButton.png" alt="soundButton"/></button>
+        <button id="muteButton" type="button"><img id="buttonImageMute" src="TemplateData/muteButton.png" alt="muteButton"/></button>
+      </div>
     </div>
 
     <div id="unity-container" class="unity-desktop">
@@ -58,8 +63,65 @@
       var fullscreenButton = document.querySelector("#unity-fullscreen-button");
       var mobileWarning = document.querySelector("#unity-mobile-warning");
 
+      var menu = document.querySelector("#menu");
       var startButton = document.querySelector("#startButton");
       var initButton = document.querySelector("#initButton");
+      var menuButton = document.querySelector("#menuButton");
+      var soundButton = document.querySelector("#soundButton");
+      var muteButton = document.querySelector("#muteButton");
+
+
+      function _resize( portraitRatio, landscapeRatio )
+      {
+        var _ratio = 10;
+        if( window.innerWidth > window.innerHeight ) _ratio = landscapeRatio;
+        else _ratio = portraitRatio;
+
+        var _a = window.innerHeight / _ratio;
+        menuButton.style.height = _a.toString() + "px";
+        menuButton.style.width = _a.toString() + "px";
+        soundButton.style.height = _a.toString() + "px";
+        soundButton.style.width = _a.toString() + "px";
+        muteButton.style.height = _a.toString() + "px";
+        muteButton.style.width = _a.toString() + "px";
+
+        // window.alert( "resize" + _ratio );
+      }
+
+      
+      var _pRatio = 10;
+      var _lRatio = 10;
+
+      // スマホ.
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent))
+      {     
+        _pRatio = 12;
+        _lRatio = 8;   
+        if (/iPhone|iPad|iPod/i.test(navigator.userAgent))
+        { 
+          // ios.         
+        }
+        else
+        {
+          // Android.
+        }
+      }
+      else
+      {
+        // PC.
+        _pRatio = 10;
+        _lRatio = 10;
+      }
+
+      _resize( _pRatio, _lRatio );
+      window.addEventListener
+      (
+        'resize', function()
+        {
+          _resize( _pRatio, _lRatio );
+        }
+      );
+
 
       // By default Unity keeps WebGL canvas render target size matched with
       // the DOM size of the canvas element (scaled by window.devicePixelRatio)
@@ -85,6 +147,8 @@
       canvas.style.background = "url('" + buildUrl + "/{{{ BACKGROUND_FILENAME.replace(/'/g, '%27') }}}') center / cover";
 #endif
       loadingBar.style.display = "block";
+      // ヘッダーメニューは開始前は非表示.
+      menu.style.display = "none";
 
       startButton.onclick = () => 
       {
@@ -100,20 +164,27 @@
           })
           .then((unityInstance) => 
           {
+            // ヘッダーメニュー最初はMuteされてる状態（MenuとMuteOn状態のボタンのみ）のMenuを表示.
+            menu.style.display = "flex";
+            soundButton.style.display = "none";
+
             loadingBar.style.display = "none";
-            initButton.style.display = "block";
+            // initButton.style.display = "block";
+
             // fullscreenButton.onclick = () => {
             //   unityInstance.SetFullscreen(1);
             //   window.vuplex.SetFullscreen(1)/*https://support.vuplex.com/articles/webgl-fullscreen*/;
             // };
-
+              
+            // 
             unityInstance.SendMessage('AppGameManager', 'OnAppStarted' );
             
-            initButton.onclick = () => 
-            {
-              unityInstance.SendMessage('AppGameManager', 'OnHtmlInitButtonClicked' );
-              initButton.style.display = "none";
-            };
+            // initButton.onclick = () => 
+            // {
+            //   unityInstance.SendMessage('AppGameManager', 'OnHtmlInitButtonClicked' );
+            //   initButton.style.display = "none";
+            // };
+            
 
             window.addEventListener
             (
@@ -126,6 +197,27 @@
                 unityInstance.SendMessage('AppGameManager', 'ChangeScreenHeight', window.innerHeight );
               }
             );
+
+
+            // ヘッダーメニューボタン.
+            menuButton.onclick = () =>
+            {
+              window.alert( "menu" );
+            };
+
+            soundButton.onclick = () =>
+            {
+              window.alert( "sound" );
+            };
+
+            muteButton.onclick = () =>
+            {
+              // window.alert( "mute" );
+              unityInstance.SendMessage('AppGameManager', 'OnHtmlMuteButtonClicked' );
+            };
+
+
+
           })
           .catch((message) => 
           {

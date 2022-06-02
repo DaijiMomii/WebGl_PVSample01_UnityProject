@@ -22,12 +22,14 @@ public class AppVideoController : MonoBehaviour
     [SerializeField] List<RawImage> testRaws = new List<RawImage>();
 
 
-    public List<AppVideoPlayer> FieldVideos{ get; set; } = new List<AppVideoPlayer>();
-    public List<AppVideoPlayer> UniqueVideos{ get; set; } = new List<AppVideoPlayer>();
-    public class VideoInitEvent : UnityEvent<AppVideoPlayer>{}
+    public List<PvVideoPlayer> FieldVideos{ get; set; } = new List<PvVideoPlayer>();
+    public List<PvVideoPlayer> UniqueVideos{ get; set; } = new List<PvVideoPlayer>();
+    public class VideoInitEvent : UnityEvent<PvVideoPlayer>{}
     public VideoInitEvent InitEvent{ get; set; } = new VideoInitEvent();
 
     bool isInit = true;
+
+    bool isMuteInitialize = false;
 
 
     void Start()
@@ -69,14 +71,14 @@ public class AppVideoController : MonoBehaviour
         void _Create( string _fileName, bool isField )
         {
             var _go = Instantiate( fieldVideoPlayerPrefab, this.transform.position, this.transform.rotation, this.transform );
-            var _video = _go.GetComponent<AppVideoPlayer>();
+            var _video = _go.GetComponent<PvVideoPlayer>();
 
             _video.Video.source = VideoSource.Url;
             var _url = Application.streamingAssetsPath + "/Movie/" + _fileName;
             _video.Video.url = _url;
             _video.FileName = _fileName;
             _video.Url = _url;
-            _video.Type = ( isField == true ) ? AppVideoPlayer.VideoType.Field : AppVideoPlayer.VideoType.Unique;
+            _video.Type = ( isField == true ) ? PvVideoPlayer.VideoType.Field : PvVideoPlayer.VideoType.Unique;
 
             if( isField == true ) FieldVideos.Add( _video );
             else UniqueVideos.Add( _video );
@@ -86,9 +88,9 @@ public class AppVideoController : MonoBehaviour
         }
     }
 
-    void OnPrepareCompleted( AppVideoPlayer fVideo )
+    void OnPrepareCompleted( PvVideoPlayer fVideo )
     {        
-        AppGameManager.Instance.AddLog( "@ Prepared Comp. " + fVideo.name ); 
+        // AppGameManager.Instance.AddLog( "@ Prepared Comp. " + fVideo.name ); 
         // Debug.Log( fVideo.Video.texture.width + "/" + fVideo.Video.texture.height );
         var _rt = new RenderTexture( fVideo.Video.texture.width, fVideo.Video.texture.width, 16, RenderTextureFormat.Default );
         fVideo.Video.targetTexture = _rt;
@@ -97,7 +99,7 @@ public class AppVideoController : MonoBehaviour
         isInit = true;
 
         fVideo.Video.Play();
-        if( fVideo.Type == AppVideoPlayer.VideoType.Unique )
+        if( fVideo.Type == PvVideoPlayer.VideoType.Unique )
         {
             fVideo.Video.Pause();
             fVideo.Video.frame = 2;
@@ -108,58 +110,71 @@ public class AppVideoController : MonoBehaviour
 
 
     // FieldVideoPlayer video1 = null;
-    public void OnHtmlInit()
+    public void OnHtmlInit( bool isMute = false )
     {
+        if( isMuteInitialize == true ) return;
+
         Debug.Log( "@@@@@@... HTMLのInit" );      
-        AppGameManager.Instance.AddLog( "@@@@@@@@" ); 
 
         foreach( var video in FieldVideos )
         {
             video.Video.SetDirectAudioMute( 0, true ); 
-            // video.Video.SetDirectAudioVolume( 0, 0 );  
-            // video.Video.Prepare();    
-            // video.Video.Play();  
-            // video.Video.Pause();
-            // video.Video.frame = 2;
+        }
+
+        foreach( var video in UniqueVideos )
+        {
+            video.Video.SetDirectAudioMute( 0, false );  
+            float _value = ( isMute == true ) ? 0 : 1f;
+            video.Video.SetDirectAudioVolume( 0, _value );      
+            if( video.Video.isPlaying == true && video.Type == PvVideoPlayer.VideoType.Unique )
+            {
+                video.Video.Pause();
+                video.Video.frame = 2;
+            }
+        }
+
+        isMuteInitialize = true;
+    }
+
+    public void OnHtmlMuteOn()
+    {
+        foreach( var video in FieldVideos )
+        {
+            video.Video.SetDirectAudioMute( 0, true ); 
+        }
+
+        foreach( var video in UniqueVideos )
+        {
+            video.Video.SetDirectAudioMute( 0, false );
+            video.Video.SetDirectAudioVolume( 0, 0 );      
+            if( video.Video.isPlaying == true && video.Type == PvVideoPlayer.VideoType.Unique )
+            {
+                video.Video.Pause();
+                video.Video.frame = 2;
+            }
+        }
+    }
+
+    public void OnHtmlMuteOff()
+    {
+        foreach( var video in FieldVideos )
+        {
+            video.Video.SetDirectAudioMute( 0, true ); 
         }
 
         foreach( var video in UniqueVideos )
         {
             video.Video.SetDirectAudioMute( 0, false );  
             video.Video.SetDirectAudioVolume( 0, 1 );      
-            if( video.Video.isPlaying == true && video.Type == AppVideoPlayer.VideoType.Unique )
+            if( video.Video.isPlaying == true && video.Type == PvVideoPlayer.VideoType.Unique )
             {
                 video.Video.Pause();
                 video.Video.frame = 2;
             }
-            // video.Video.Play();  
-            // video.Video.Pause();
-            // video.Video.frame = 2;
-
-            // video1 = video;
         }
     }
 
-    // public void PPPP()
-    // {
-    //     if( video1 != null )
-    //     {
-    //         if( video1.Video.isPlaying == true ) video1.Video.Pause();
-    //         else video1.Video.Play();
-    //     }
-    // }
-
-    // public void SetVideo( string fileName, RawImage raw )
-    // {
-    //     var _video = GetVideo( fileName );
-    //     if( _video != null )
-    //     {
-    //         _video.rawList.Add( raw );
-    //     }
-    // }
-
-
-    public AppVideoPlayer GetFieldVideo( string fileName )
+    public PvVideoPlayer GetFieldVideo( string fileName )
     {
         foreach( var param in FieldVideos )
         {
@@ -168,7 +183,7 @@ public class AppVideoController : MonoBehaviour
         return null;
     }
 
-    public AppVideoPlayer GetUniqueVideo( string fileName )
+    public PvVideoPlayer GetUniqueVideo( string fileName )
     {
         foreach( var param in UniqueVideos )
         {
@@ -177,7 +192,7 @@ public class AppVideoController : MonoBehaviour
         return null;
     }
 
-    public AppVideoPlayer PlayFieldVideo( string fileName )
+    public PvVideoPlayer PlayFieldVideo( string fileName )
     {
         foreach( var video in FieldVideos )
         {
@@ -190,7 +205,7 @@ public class AppVideoController : MonoBehaviour
         return null;
     }
 
-    public AppVideoPlayer PlayUniqueVideo( string fileName )
+    public PvVideoPlayer PlayUniqueVideo( string fileName )
     {
         foreach( var video in UniqueVideos )
         {
@@ -203,7 +218,7 @@ public class AppVideoController : MonoBehaviour
         return null;
     }
 
-    public AppVideoPlayer PauseFieldVideo( string fileName )
+    public PvVideoPlayer PauseFieldVideo( string fileName )
     {
         foreach( var video in FieldVideos )
         {
@@ -216,7 +231,7 @@ public class AppVideoController : MonoBehaviour
         return null;
     }
 
-    public AppVideoPlayer PauseUniqueVideo( string fileName )
+    public PvVideoPlayer PauseUniqueVideo( string fileName )
     {
         foreach( var video in UniqueVideos )
         {
@@ -230,7 +245,7 @@ public class AppVideoController : MonoBehaviour
     }
 
     
-    public AppVideoPlayer StopFieldVideo( string fileName )
+    public PvVideoPlayer StopFieldVideo( string fileName )
     {
         foreach( var video in FieldVideos )
         {
@@ -243,7 +258,7 @@ public class AppVideoController : MonoBehaviour
         return null;
     }
 
-    public AppVideoPlayer StopUniqueVideo( string fileName )
+    public PvVideoPlayer StopUniqueVideo( string fileName )
     {
         foreach( var video in UniqueVideos )
         {
@@ -259,7 +274,7 @@ public class AppVideoController : MonoBehaviour
         return null;
     }
 
-    public AppVideoPlayer SetReadyFieldVideo( string fileName, int frame = 1 )
+    public PvVideoPlayer SetReadyFieldVideo( string fileName, int frame = 1 )
     {
         var _video = PlayFieldVideo( fileName );
         if( _video == null ) 
@@ -273,7 +288,7 @@ public class AppVideoController : MonoBehaviour
         return _video;
     }
 
-    public AppVideoPlayer SetReadyUniqueVideo( string fileName, int frame = 1 )
+    public PvVideoPlayer SetReadyUniqueVideo( string fileName, int frame = 1 )
     {
         var _video = PlayUniqueVideo( fileName );
         if( _video == null ) 
