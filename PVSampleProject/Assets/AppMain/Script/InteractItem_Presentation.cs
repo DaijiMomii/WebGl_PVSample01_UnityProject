@@ -5,6 +5,8 @@ using UnityEngine.Events;
 
 public class InteractItem_Presentation : InteractableItemBase  
 {
+    // 
+    [SerializeField] string audioFileName = "";
     // プレゼン時画面横長の時にカメラがくる位置.
     [SerializeField] Transform presentationCameraTransformHorizontal = null;
     // プレゼン時画面縦長の時にカメラがくる位置.
@@ -13,6 +15,7 @@ public class InteractItem_Presentation : InteractableItemBase
     [SerializeField] UITransition presentationTransition = null;
     // プレゼン画面レクト.
     [SerializeField] RectTransform presentationRect = null;
+    [SerializeField] AudioSource audioSource = null;
 
     public UnityEvent ItemClickedEvent = new UnityEvent();
     public UnityEvent PresentationClosedEvent = new UnityEvent();
@@ -25,6 +28,11 @@ public class InteractItem_Presentation : InteractableItemBase
     {
         presentationTransition.gameObject.SetActive( true );
         presentationTransition.TransitionOut( null, false, true, false );
+
+        if( audioSource != null )
+        {
+            AppGameManager.Instance.AppSoundController.AddAudioSourceParam( audioSource, false );
+        }
     }
 
     void Update()
@@ -44,6 +52,7 @@ public class InteractItem_Presentation : InteractableItemBase
         Debug.Log( "プレゼン開始" );
 
         childrenTransformWithLayer = GetAllChildrenWithLayer( gameObject );
+        AppGameManager.Instance.SetMoveUI( false );
         foreach( ( int layerNum, Transform childTransform ) tpl in childrenTransformWithLayer )
         {
             // SUbUIレイヤーは変更しない.
@@ -88,6 +97,11 @@ public class InteractItem_Presentation : InteractableItemBase
         AppGameManager.Instance.CurrentLock.Rotation = false;
         AppGameManager.Instance.CurrentLock.Click = false;
         AppGameManager.Instance.CurrentLock.Look = false;
+
+        var _clip = AppGameManager.Instance.AppSoundController.GetAudioClip( audioFileName );
+        audioSource.PlayOneShot( _clip );
+
+        AppGameManager.Instance.SetMoveUI( true );
 
         PresentationClosedEvent?.Invoke();
     }

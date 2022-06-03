@@ -16,6 +16,8 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     // プラグインインポート端末情報の取得.
     [DllImport("__Internal")]
     private static extern void DeviceInformation();
+    [DllImport("__Internal")]
+    private static extern void OSInformation();
     // プラグインインポートURLを開く.
     [DllImport("__Internal")]
     private static extern void OpenUrl( string url );
@@ -51,6 +53,16 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
         SoundOn, Mute
     }
 
+    public enum Device
+    {
+        Unknown, iPhone, iPad, android, androidTab, iOSOther, Editor,
+    }
+
+    public enum OS
+    {
+        Unknown, iOS, Android, Editor, Windows, OSX,
+    }
+
     // -------------------------------------------------------------------------------------
     /// <summary>
     /// 固定（ロック）パラメータ定義.
@@ -66,6 +78,12 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
         public bool Look = false;
     }
 
+    public class DeviceParam
+    {
+        public Device Device = Device.Unknown;
+        public OS OS = OS.Unknown;
+    }
+
     // クリック、タップRayのマスク.
     [SerializeField] LayerMask clickRayMask = default(LayerMask);
     // 画面中心Rayのマスク.
@@ -74,6 +92,8 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     [SerializeField] AppPlayerController player = null;
     //
     [SerializeField] AppSkyDomeControl skyDome = null;
+    //
+    [SerializeField] AppSoundController appSoundController = null;
     // 移動用UIの背景レクトトランスフォーム.
     [SerializeField] RectTransform stickBgRect = null;
     // 移動用UIのスティックレクトトランスフォーム.
@@ -87,6 +107,14 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     [SerializeField] UITransition popupBgTransition = null;
 
     [SerializeField] UITransition stopWindowTransition = null;
+
+
+    [SerializeField] RectTransform moveUIRoot = null;
+
+    [SerializeField] RectTransform phoneStickRect = null;
+    [SerializeField] RectTransform pcKeyRect = null;
+
+    [SerializeField] AppSideMenu sideMenu = null;
 
 
     // public bool IsOpenHtmlMenu{ get; private set; } = true;
@@ -122,9 +150,9 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     public class ScreenEvent : UnityEvent<Vector2>{}
     public ScreenEvent ScreenSizeChanged = new ScreenEvent();
 
-    public AppVideoController AppVideoController{ get{ return appVideoController; } }
+    public AppSoundController AppSoundController{ get{ return appSoundController; } }
 
-    public string Platform{ get; private set; } = "none";
+    public DeviceParam Platform{ get; private set; } = new DeviceParam();
 
     // 移動用のクリック開始位置.
     Vector3? startMoveMousePosition = null;
@@ -136,7 +164,6 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     InteractableItemBase currentCenterRayHit = null;
 
 
-    [SerializeField] AppVideoController appVideoController = null;
     
     // DEBUG.
     [SerializeField] Text platformText = null;
@@ -156,13 +183,35 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
         if( Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.OSXEditor )
         {
             platformText.text = "Editor";
-            Platform = "Editor";
+            Platform.Device = Device.Editor;
+            Platform.OS = OS.Editor;
         }
         else
         {            
             DeviceInformation();
-            // platformText.text = "---";
+            OSInformation();
         }
+
+        platformText.text = Platform.Device + "(" + Platform.OS + ")";
+
+        if( Platform.OS == OS.Editor )
+        {
+            pcKeyRect.gameObject.SetActive( true );
+            phoneStickRect.gameObject.SetActive( true );
+        }
+        else if( Platform.OS == OS.OSX || Platform.OS == OS.Windows )
+        {
+            pcKeyRect.gameObject.SetActive( true );
+            phoneStickRect.gameObject.SetActive( false );
+        }
+        else
+        {            
+            pcKeyRect.gameObject.SetActive( false );
+            phoneStickRect.gameObject.SetActive( true );
+        }
+
+
+
 
         if( currentScreen.x == 0 ) currentScreen.x = Screen.width;
         if( currentScreen.y == 0 ) currentScreen.y = Screen.height;
@@ -212,6 +261,7 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
 
         // Debug.Log( "@@@ " + _newJsonText );
         // platformText.text += "\na@ : " + _newJsonText;
+
 
     }
 
@@ -639,40 +689,6 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     }
 
 
-    // public void Open_Test()
-    // {
-    //     CurrentLock.Move = true;
-    //     CurrentLock.Rotation = true;
-    //     CurrentLock.Click = true;
-    //     CurrentLock.Look = true;
-
-    //     bgImage.gameObject.SetActive( true );
-    //     var _current = bgImage.color;
-    //     _current.a = 0;
-    //     bgImage.color = _current;
-    //     bgImage.DOFade( 0.5f, 1f )
-    //     .OnComplete( () => 
-    //     {  
-    //         testWindow.SetActive( true );
-    //     } );
-    // }
-
-    // public void Close_Test()
-    // {
-    //     testWindow.SetActive( false );
-    //     bgImage.DOFade( 0f, 1f )
-    //     .OnComplete( () => 
-    //     {
-    //         bgImage.gameObject.SetActive( false );
-
-    //         CurrentLock.Move = false;
-    //         CurrentLock.Rotation = false;
-    //         CurrentLock.Click = false;
-    //         CurrentLock.Look = false;
-
-    //     } );
-    // }
-
 
 
     public void SetPresentation( InteractItem_Presentation presentationItem )
@@ -686,10 +702,6 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     }
 
 
-    // public void TestPopup()
-    // {
-    //     OpenPopup( popupTest );
-    // }
 
     public void AppStop()
     {
@@ -774,11 +786,81 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     /// </summary>
     /// <param name="platformKey"></param>
     // -------------------------------------------------------------------------------------
-    public void SetPlatform( string platformKey )
+    public void SetDevice( string deviceKey )
     {
-        Debug.Log( "Platform : " + platformKey );
-        platformText.text = platformKey;
-        Platform = platformKey;
+        Debug.Log( "Device : " + deviceKey );
+
+        switch( deviceKey )
+        {
+            case "iPhone":
+            {
+                Platform.Device = Device.iPhone;
+            }
+            break;
+            case "android":
+            {
+                Platform.Device = Device.android;
+            }
+            break;
+            case "iPad":
+            {
+                Platform.Device = Device.iPad;
+            }
+            break;
+            case "androidTab":
+            {
+                Platform.Device = Device.androidTab;
+            }
+            break;
+            case "iOSOther":
+            {
+                Platform.Device = Device.iOSOther;
+            }
+            break;
+            default:
+            {
+                Platform.Device = Device.Unknown;
+            }
+            break;
+        }
+
+        // platformText.text = Platform.OS + "(" + Platform.OS + ")";
+    }
+
+    public void SetOS( string osKey )
+    {
+        Debug.Log( "OS : " + osKey );
+
+        switch( osKey )
+        {
+            case "Windows":
+            {
+                Platform.OS = OS.Windows;
+            }
+            break;
+            case "android":
+            {
+                Platform.OS = OS.Android;
+            }
+            break;
+            case "iOS":
+            {
+                Platform.OS = OS.iOS;
+            }
+            break;
+            case "OSX":
+            {
+                Platform.OS = OS.OSX;
+            }
+            break;
+            default:
+            {
+                Platform.OS = OS.Unknown;
+            }
+            break;
+        }
+
+        // platformText.text = Platform.OS + "(" + Platform.OS + ")";
     }
     
 
@@ -820,7 +902,7 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     {
         Debug.Log( "HTMLのMuteボタンクリック" );
 
-        appVideoController.OnHtmlInit();
+        appSoundController.OnHtmlInit();
         CurrentLock.Click = false;
         CurrentLock.Look = false;
         CurrentLock.Move = false;
@@ -849,22 +931,36 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
 
     }
 
+    public void OnHtmlMenuButtonClicked()
+    {
+        if( sideMenu.IsOpen == false )
+        {
+            sideMenu.Open();
+            SetMoveUI( false );
+        }
+        else
+        {
+            sideMenu.Close();
+            SetMoveUI( true );
+        }
+    }
+
     public void OnHtmlMuteButtonClicked()
     {        
-        appVideoController.OnHtmlInit();
+        appSoundController.OnHtmlInit();
 
         if( CurrentHtmlMenuState == HtmlMenuState.Mute )
         {            
-            appVideoController.OnHtmlInit( false );
-            appVideoController.OnHtmlMuteOff();
+            appSoundController.OnHtmlInit( false );
+            appSoundController.OnHtmlMuteOff();
 
             SetMenuState( "SoundOn" );
             CurrentHtmlMenuState = HtmlMenuState.SoundOn;
         }
         else if( CurrentHtmlMenuState == HtmlMenuState.SoundOn )
         {
-            appVideoController.OnHtmlInit( true );
-            appVideoController.OnHtmlMuteOn();
+            appSoundController.OnHtmlInit( true );
+            appSoundController.OnHtmlMuteOn();
             
             SetMenuState( "Mute" );
             CurrentHtmlMenuState = HtmlMenuState.Mute;
@@ -891,15 +987,15 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     }
 
 
+    public void SetMoveUI( bool isActive )
+    {
+        moveUIRoot.gameObject.SetActive( isActive );
+    }
 
 
-    // void SetVideo( VideoPlayer video, string fileName )
-    // {
-    //     video.source = VideoSource.Url;
-    //     video.url = Application.streamingAssetsPath + "/" + "Movie" + "/pfDemo.mp4";// + fileName;
-
-    //     video.Prepare();
-    //     video.Play();
-    // }
-
+    public void TestOpenSideMenu()
+    {
+        if( sideMenu.IsOpen == false ) sideMenu.Open();
+        else sideMenu.Close();
+    }
 }

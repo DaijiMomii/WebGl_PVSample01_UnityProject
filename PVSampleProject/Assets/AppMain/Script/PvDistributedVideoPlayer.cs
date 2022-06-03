@@ -7,7 +7,7 @@ using UnityEngine.Events;
 using UniRx;
 using Cysharp.Threading.Tasks;
 
-public class PvVideoPlayer : MonoBehaviour
+public class PvDistributedVideoPlayer : MonoBehaviour
 {
     public enum VideoType
     {
@@ -27,13 +27,16 @@ public class PvVideoPlayer : MonoBehaviour
         }
     }
 
-    public VideoType Type = VideoType.Field;
+    // public VideoType Type = VideoType.Field;
+
+    public bool IsMuteVideo = true;
+    public bool IsPlayOnAwake = false;
 
 
 
 
 
-    public class PreparedCompletedEvent : UnityEvent<PvVideoPlayer>{}
+    public class PreparedCompletedEvent : UnityEvent<PvDistributedVideoPlayer>{}
     public PreparedCompletedEvent PreparedCompleted = new PreparedCompletedEvent();
 
     public List<RawImage> rawList = new List<RawImage>();

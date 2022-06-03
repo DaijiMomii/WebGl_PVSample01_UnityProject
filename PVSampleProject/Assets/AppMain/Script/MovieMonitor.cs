@@ -18,14 +18,14 @@ public class MovieMonitor : MonoBehaviour
 
     bool isPlayingOnPresentationStarted = true;
 
-    PvVideoPlayer video = null;
+    PvDistributedVideoPlayer video = null;
 
     void Start()
     {
         // AppGameManager.Instance.PresentationStartEvent.AddListener( OnPresentationStart );
         // AppGameManager.Instance.PresentationEndEvent.AddListener( OnPresentationEnd );
 
-        AppGameManager.Instance.AppVideoController.InitEvent.AddListener( OnVideoInitCompleted );
+        AppGameManager.Instance.AppSoundController.InitEvent.AddListener( OnVideoInitCompleted );
 
     }
 
@@ -33,7 +33,7 @@ public class MovieMonitor : MonoBehaviour
     {
     }
 
-    void OnVideoInitCompleted( PvVideoPlayer videoPlayer )
+    void OnVideoInitCompleted( PvDistributedVideoPlayer videoPlayer )
     {
         if( fileName != videoPlayer.FileName ) return;
 

@@ -9,39 +9,71 @@ mergeInto(LibraryManager.library,
     if( navigator.userAgent.indexOf('iPhone') > 0 || navigator.userAgent.indexOf('iPod') > 0 )
     {
       // iosスマホ用の処理
-      SendMessage('AppGameManager', 'SetPlatform', "iPhone" );
+      SendMessage('AppGameManager', 'SetDevice', "iPhone" );
       os = "iOS";
     }
     // Android&Mobile.
     else if ( navigator.userAgent.indexOf('Android') > 0 && navigator.userAgent.indexOf('Mobile') > 0 )
     {
       // Androidスマホ用の処理
-      SendMessage('AppGameManager', 'SetPlatform', "android" );
+      SendMessage('AppGameManager', 'SetDevice', "android" );
       os = "android";
     }
     // iPad.
     else if(navigator.userAgent.indexOf('iPad') > 0 )
     {
       //タブレット用の処理
-      SendMessage('AppGameManager', 'SetPlatform', "iPad" );
+      SendMessage('AppGameManager', 'SetDevice', "iPad" );
       os = "iOS";
     }
     // Android(Not Mobile).
     else if( navigator.userAgent.indexOf('Android') > 0 ) 
     {
-      SendMessage('AppGameManager', 'SetPlatform', "androidTab" );
+      SendMessage('AppGameManager', 'SetDevice', "androidTab" );
       os = "android";
     } 
     // Throw iPad Safari, Not Chrome.
     else if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1 && typeof document.ontouchstart !== 'undefined')
     {
       // iOS13以降のiPad用の処理
-      SendMessage('AppGameManager', 'SetPlatform', "iOSOther" );
+      SendMessage('AppGameManager', 'SetDevice', "iOSOther" );
       os = "iOS";
     }
     else
     {
-      SendMessage('AppGameManager', 'SetPlatform', navigator.userAgent );
+      SendMessage('AppGameManager', 'SetDevice', navigator.userAgent );
+    }
+  },
+
+
+  OSInformation: function()
+  {
+    var ua = window.navigator.userAgent.toLowerCase();
+
+    if(ua.indexOf("windows nt") !== -1) 
+    {
+      console.log("<<Play on Windows>>");
+      SendMessage('AppGameManager', 'SetOS', "Windows" );
+    } 
+    else if(ua.indexOf("android") !== -1) 
+    {
+      console.log("<<Play on android>>");
+      SendMessage('AppGameManager', 'SetOS', "android" );
+    } 
+    else if(ua.indexOf("iphone") !== -1 || ua.indexOf("ipad") !== -1) 
+    {
+      console.log("<<Play on iOS>>");
+      SendMessage('AppGameManager', 'SetOS', "iOS" );
+    } 
+    else if(ua.indexOf("mac os x") !== -1) 
+    {
+      console.log("<<Play on OSX>>");
+      SendMessage('AppGameManager', 'SetOS', "OSX" );
+    } 
+    else 
+    {
+      console.log("<<Play on UnknownOS>>");
+      SendMessage('AppGameManager', 'SetOS', "Unknown" );
     }
   },
 
@@ -125,34 +157,34 @@ mergeInto(LibraryManager.library,
     if( navigator.userAgent.indexOf('iPhone') > 0 || navigator.userAgent.indexOf('iPod') > 0 )
     {
       // iosスマホ用の処理
-      SendMessage('LocationManager', 'SetPlatform', "iPhone" );
+      SendMessage('LocationManager', 'SetDevice', "iPhone" );
       os = "iOS";
     }
     // Android&Mobile.
     else if ( navigator.userAgent.indexOf('Android') > 0 && navigator.userAgent.indexOf('Mobile') > 0 )
     {
       // Androidスマホ用の処理
-      SendMessage('LocationManager', 'SetPlatform', "android" );
+      SendMessage('LocationManager', 'SetDevice', "android" );
       os = "android";
     }
     // iPad.
     else if(navigator.userAgent.indexOf('iPad') > 0 )
     {
       //タブレット用の処理
-      SendMessage('LocationManager', 'SetPlatform', "iPad" );
+      SendMessage('LocationManager', 'SetDevice', "iPad" );
       os = "iOS";
     }
     // Android(Not Mobile).
     else if( navigator.userAgent.indexOf('Android') > 0 ) 
     {
-      SendMessage('LocationManager', 'SetPlatform', "androidTab" );
+      SendMessage('LocationManager', 'SetDevice', "androidTab" );
       os = "android";
     } 
     // Throw iPad Safari, Not Chrome.
     else if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1 && typeof document.ontouchstart !== 'undefined')
     {
       // iOS13以降のiPad用の処理
-      SendMessage('LocationManager', 'SetPlatform', "iOSOther" );
+      SendMessage('LocationManager', 'SetDevice', "iOSOther" );
       os = "iOS";
     }
 

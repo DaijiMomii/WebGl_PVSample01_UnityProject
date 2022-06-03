@@ -98,12 +98,14 @@ public class UITransition : MonoBehaviour
 
         currentSeq.Append
         (
-            Rect.DOLocalMoveX( _goal.x, transitionTime )
+            // Rect.DOLocalMoveX( _goal.x, transitionTime )
+            Rect.DOAnchorPosX( _goal.x, transitionTime )
         );
 
         currentSeq.Join
         (
-            Rect.DOLocalMoveY( _goal.y, transitionTime )
+            // Rect.DOLocalMoveY( _goal.y, transitionTime )
+            Rect.DOAnchorPosY( _goal.y, transitionTime )
         );
 
         if( parameter.IsAlpha == true )
@@ -155,12 +157,14 @@ public class UITransition : MonoBehaviour
 
         currentSeq.Append
         (
-            Rect.DOLocalMoveX( _goal.x, transitionTime )
+            // Rect.DOLocalMoveX( _goal.x, transitionTime )
+            Rect.DOAnchorPosX( _goal.x, transitionTime )
         );
 
         currentSeq.Join
         (
-            Rect.DOLocalMoveY( _goal.y, transitionTime )
+            // Rect.DOLocalMoveY( _goal.y, transitionTime )
+            Rect.DOAnchorPosY( _goal.y, transitionTime )
         );
         
         if( parameter.IsAlpha == true )

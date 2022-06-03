@@ -23,6 +23,8 @@ public class InteractItem_ShowImage : InteractableItemBase
         AppGameManager.Instance.CurrentLock.Rotation = true;
         AppGameManager.Instance.CurrentLock.Click = true;
         AppGameManager.Instance.CurrentLock.Look = true;
+
+        AppGameManager.Instance.SetMoveUI( false );
     }
 
     public void OnCloseButtonClicked()
@@ -33,6 +35,8 @@ public class InteractItem_ShowImage : InteractableItemBase
         AppGameManager.Instance.CurrentLock.Rotation = false;
         AppGameManager.Instance.CurrentLock.Click = false;
         AppGameManager.Instance.CurrentLock.Look = false;
+
+        AppGameManager.Instance.SetMoveUI( true );
     }
 
 }

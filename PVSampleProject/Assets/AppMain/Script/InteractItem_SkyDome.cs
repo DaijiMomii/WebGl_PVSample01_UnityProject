@@ -29,6 +29,8 @@ public class InteractItem_SkyDome : InteractableItemBase
         base.OnClick();
         Debug.Log( "SkyDome表示" );
         AppGameManager.Instance.SkyDomeControl.StartSkyDomeEvent?.Invoke( true );
+
+        AppGameManager.Instance.SetMoveUI( false );
         
         AppGameManager.Instance.CurrentLock.Move = true;
         AppGameManager.Instance.CurrentLock.Click = true;
@@ -62,6 +64,7 @@ public class InteractItem_SkyDome : InteractableItemBase
     public void OnCloseButtonClicked()
     {
         closeButton.gameObject.SetActive( false );
+        AppGameManager.Instance.SetMoveUI( true );
         sphere.gameObject.layer = sphereDefaultLayerNumber;
         
         AppGameManager.Instance.SkyDomeControl.FinishSkyDomeEvent?.Invoke( true );

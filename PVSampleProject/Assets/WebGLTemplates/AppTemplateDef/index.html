@@ -11,7 +11,7 @@
 
     <div id="buttons">
       <button id="startButton" type="button">Start</button>
-      <button id="initButton" type="button"><img src="TemplateData/initImage.png" alt="informationImg"/></button>
+      <!-- <button id="initButton" type="button"><img src="TemplateData/initImage.png" alt="informationImg"/></button> -->
 
       <div id="menu">
         <button id="menuButton" type="button"><img id="buttonImage" src="TemplateData/menuIcon.png" alt="menuButton"/></button>
@@ -65,7 +65,7 @@
 
       var menu = document.querySelector("#menu");
       var startButton = document.querySelector("#startButton");
-      var initButton = document.querySelector("#initButton");
+      // var initButton = document.querySelector("#initButton");
       var menuButton = document.querySelector("#menuButton");
       var soundButton = document.querySelector("#soundButton");
       var muteButton = document.querySelector("#muteButton");
@@ -202,12 +202,13 @@
             // ヘッダーメニューボタン.
             menuButton.onclick = () =>
             {
-              window.alert( "menu" );
+              // window.alert( "menu" );
+              unityInstance.SendMessage('AppGameManager', 'OnHtmlMenuButtonClicked' );
             };
 
             soundButton.onclick = () =>
             {
-              window.alert( "sound" );
+              window.alert( "sound ボタン. 準備中" );
             };
 
             muteButton.onclick = () =>

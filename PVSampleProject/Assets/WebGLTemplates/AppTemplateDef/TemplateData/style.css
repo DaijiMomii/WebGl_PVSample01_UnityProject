@@ -184,12 +184,12 @@ body
     height: 100%;
 }
 
-button#initButton img
+/* button#initButton img
 {
     width: 100%; 
     height: 100%;
-}
-
+} */
+/* 
 #initButton
 {
     width: 80%; height: 80%;
@@ -200,7 +200,6 @@ button#initButton img
     z-index: 10; 
     pointer-events: auto ;
     display: none;
-    /* background-image:url('initImage.png'); */
 
     padding:0;
     margin:0;
@@ -211,7 +210,7 @@ button#initButton img
     overflow:visible;
     cursor:pointer;
     
-}
+} */
 
 /* #initButtonImage
 {

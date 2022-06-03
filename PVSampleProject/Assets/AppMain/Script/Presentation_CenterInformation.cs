@@ -32,7 +32,7 @@ public class Presentation_CenterInformation : MonoBehaviour
 
 
     // 動画再生管理クラス.
-    PvVideoPlayer video = null;
+    PvDistributedVideoPlayer video = null;
 
     void Start()
     {
@@ -49,7 +49,8 @@ public class Presentation_CenterInformation : MonoBehaviour
 
     void Init()
     {
-        if( video == null ) video = AppGameManager.Instance.AppVideoController.GetUniqueVideo( movie.FileName );
+        // if( video == null ) video = AppGameManager.Instance.AppVideoController.GetUniqueVideo( movie.FileName );
+        if( video == null ) video = AppGameManager.Instance.AppSoundController.GetVideo( movie.FileName );
     }
 
     public void OnWhatPVButtonClicked() 
@@ -89,7 +90,8 @@ public class Presentation_CenterInformation : MonoBehaviour
 
     void OnPresentationStarted( InteractItem_Presentation item )
     {
-        AppGameManager.Instance.AppVideoController.SetReadyUniqueVideo( movie.FileName, 2 );
+        // AppGameManager.Instance.AppVideoController.SetReadyUniqueVideo( movie.FileName, 2 );
+        AppGameManager.Instance.AppSoundController.SetReadyVideo( movie.FileName, 2 );
         OpenStartMenu();
     }
 
