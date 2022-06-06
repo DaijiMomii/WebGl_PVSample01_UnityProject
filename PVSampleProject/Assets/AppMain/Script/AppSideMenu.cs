@@ -23,16 +23,20 @@ public class AppSideMenu : MonoBehaviour
         // menuTransition.gameObject.SetActive( true );
         bgTransition.TransitionIn( () => { IsOpen = true; });
         menuTransition.TransitionIn();        
+
+        // AppGameManager.Instance.SetMoveUI( false );
     }
 
     public void Close()
     {
         bgTransition.TransitionOut( () => { IsOpen = false; });
         menuTransition.TransitionOut();
+
     }
 
     public void OnCloseButtonClicked()
     {
         Close();
+        AppGameManager.Instance.SetMoveUI( true );
     }
 }

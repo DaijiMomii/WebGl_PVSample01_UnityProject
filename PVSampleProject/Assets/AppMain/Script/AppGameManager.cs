@@ -995,7 +995,9 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
 
     public void TestOpenSideMenu()
     {
-        if( sideMenu.IsOpen == false ) sideMenu.Open();
-        else sideMenu.Close();
+        // if( sideMenu.IsOpen == false ) sideMenu.Open();
+        // else sideMenu.Close();
+
+        appSoundController.TestVolumeSetting();
     }
 }

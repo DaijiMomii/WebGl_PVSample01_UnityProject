@@ -192,10 +192,15 @@ public class AppSoundController : MonoBehaviour
 
     public void OnHtmlMuteOn()
     {
+        var _os = AppGameManager.Instance.Platform.OS;
         foreach( var video in Videos )
         {
             if( video.IsMuteVideo == true ) video.Video.SetDirectAudioMute( 0, true );
-            else video.Video.SetDirectAudioMute( 0, false );
+            else
+            {
+                if( _os == AppGameManager.OS.iOS ) video.Video.SetDirectAudioMute( 0, true );
+                else video.Video.SetDirectAudioMute( 0, false );
+            }
 
             video.Video.SetDirectAudioVolume( 0, 0 );  
         }
@@ -203,7 +208,11 @@ public class AppSoundController : MonoBehaviour
         foreach( var video in videoPlayers )
         {
             if( video.IsMute == true ) video.Video.SetDirectAudioMute( 0, true );
-            else video.Video.SetDirectAudioMute( 0, false );
+            else
+            {
+                if( _os == AppGameManager.OS.iOS ) video.Video.SetDirectAudioMute( 0, true );
+                else video.Video.SetDirectAudioMute( 0, false );
+            }
 
             video.Video.SetDirectAudioVolume( 0, 0 );  
         }
@@ -331,6 +340,36 @@ public class AppSoundController : MonoBehaviour
         _video.Video.frame = frame;
 
         return _video;
+    }
+
+    bool isTest = false;
+    public void TestVolumeSetting()
+    {
+        
+        var _value = ( isTest == true ) ? 1 : 0.3f;
+        foreach( var video in Videos )
+        {
+            if( video.IsMuteVideo == true ) video.Video.SetDirectAudioMute( 0, true );
+            else video.Video.SetDirectAudioMute( 0, false );
+
+            video.Video.SetDirectAudioVolume( 0, _value );  
+        }
+
+        foreach( var video in videoPlayers )
+        {
+            if( video.IsMute == true ) video.Video.SetDirectAudioMute( 0, true );
+            else video.Video.SetDirectAudioMute( 0, false );
+
+            video.Video.SetDirectAudioVolume( 0, _value );  
+        }
+
+        foreach( var audio in audioSources )
+        {
+            if( audio.Audio.mute == true ) audio.Audio.mute = false;
+            audio.Audio.volume = _value;
+        }
+
+        isTest = !isTest;
     }
     
 }
