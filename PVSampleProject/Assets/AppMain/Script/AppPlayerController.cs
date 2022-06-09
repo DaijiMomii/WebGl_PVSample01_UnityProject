@@ -301,7 +301,7 @@ public class AppPlayerController : MonoBehaviour
     }
 
 
-    public void SetPresentation( InteractItem_Presentation presentationItem )
+    public void SetPresentation( InteractItem_Presentation presentationItem, bool isOpen )
     {
         attentionCamera.gameObject.SetActive( true );
 

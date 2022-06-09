@@ -217,6 +217,7 @@ public class UiUtility : MonoBehaviour
         {
             return;
         }
+        // Debug.Log( top + "/" + bottom + "/" + left + "/" + right );
         rect.offsetMin = new Vector2 ( left, bottom );
         rect.offsetMax = new Vector2 ( -right, -top );
     }

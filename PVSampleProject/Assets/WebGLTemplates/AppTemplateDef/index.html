@@ -13,7 +13,7 @@
       <button id="startButton" type="button">Start</button>
       <!-- <button id="initButton" type="button"><img src="TemplateData/initImage.png" alt="informationImg"/></button> -->
 
-      <div id="menu">
+      <div id="header">
         <button id="menuButton" type="button"><img id="buttonImage" src="TemplateData/menuIcon.png" alt="menuButton"/></button>
         <button id="soundButton" type="button"><img id="buttonImage" src="TemplateData/soundButton.png" alt="soundButton"/></button>
         <button id="muteButton" type="button"><img id="buttonImageMute" src="TemplateData/muteButton.png" alt="muteButton"/></button>
@@ -63,7 +63,7 @@
       var fullscreenButton = document.querySelector("#unity-fullscreen-button");
       var mobileWarning = document.querySelector("#unity-mobile-warning");
 
-      var menu = document.querySelector("#menu");
+      var header = document.querySelector("#header");
       var startButton = document.querySelector("#startButton");
       // var initButton = document.querySelector("#initButton");
       var menuButton = document.querySelector("#menuButton");
@@ -148,7 +148,7 @@
 #endif
       loadingBar.style.display = "block";
       // ヘッダーメニューは開始前は非表示.
-      menu.style.display = "none";
+      header.style.display = "none";
 
       startButton.onclick = () => 
       {
@@ -165,7 +165,7 @@
           .then((unityInstance) => 
           {
             // ヘッダーメニュー最初はMuteされてる状態（MenuとMuteOn状態のボタンのみ）のMenuを表示.
-            menu.style.display = "flex";
+            header.style.display = "flex";
             soundButton.style.display = "none";
 
             loadingBar.style.display = "none";
@@ -193,8 +193,8 @@
                 console.log("Width:" + window.innerWidth);
                 console.log("Height:" + window.innerHeight);
 
-                unityInstance.SendMessage('AppGameManager', 'ChangeScreenWidth', window.innerWidth );
-                unityInstance.SendMessage('AppGameManager', 'ChangeScreenHeight', window.innerHeight );
+                unityInstance.SendMessage('AppGameManager', 'ResizeScreenWidth', window.innerWidth );
+                unityInstance.SendMessage('AppGameManager', 'ResizeScreenHeight', window.innerHeight );
               }
             );
 

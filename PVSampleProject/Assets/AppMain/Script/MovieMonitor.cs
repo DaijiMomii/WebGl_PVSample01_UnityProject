@@ -42,7 +42,7 @@ public class MovieMonitor : MonoBehaviour
             video = videoPlayer;//AppGameManager.Instance.FieldVideoController.GetVideo( fileName );
             video.AddRawImage( raw );
         }
-        SetSize();
+        SetSize( true );
     }
 
     public void OnPresentationStart( InteractItem_Presentation item )
@@ -61,8 +61,16 @@ public class MovieMonitor : MonoBehaviour
     // }
 
 
-    void SetSize()
+    public void SetSize( bool isInit )
     {
+        if( video == null || video.Video == null || video.Video.texture == null ) return;
+
+        if( isInit == false )
+        {            
+            UiUtility.SetAnchorPreset( UiUtility.Anchor.AllStretch,  raw.rectTransform );
+            UiUtility.SetRectTransformStretch( raw.rectTransform, 10f, 10f, 10f, 10f );
+        }
+
         var _rawSize = new Vector2( raw.rectTransform.rect.width, raw.rectTransform.rect.height );
   
         UiUtility.SetAnchorPreset( UiUtility.Anchor.Middle_Center,  raw.rectTransform );

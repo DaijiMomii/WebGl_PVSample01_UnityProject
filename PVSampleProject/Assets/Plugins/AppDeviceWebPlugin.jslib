@@ -96,18 +96,18 @@ mergeInto(LibraryManager.library,
     window.open( Pointer_stringify( url ) );
   },
 
-  OpenMenu: function()
+  OpenHeader: function()
   {
-    window.alert( "Open" );
-    var menu = document.querySelector("#menu");
-    menu.style.display = "flex";
+    //window.alert( "Open" );
+    var header = document.querySelector("#header");
+    header.style.display = "flex";
   },
 
-  CloseMenu: function()
+  CloseHeader: function()
   {
-    window.alert( "Close" );
-    var menu = document.querySelector("#menu");
-    menu.style.display = "none";
+    //window.alert( "Close" );
+    var header = document.querySelector("#header");
+    header.style.display = "none";
   },
 
   SetMenuState: function( state )

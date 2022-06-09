@@ -17,8 +17,11 @@ public class InteractItem_Presentation : InteractableItemBase
     [SerializeField] RectTransform presentationRect = null;
     [SerializeField] AudioSource audioSource = null;
 
+
     public UnityEvent ItemClickedEvent = new UnityEvent();
     public UnityEvent PresentationClosedEvent = new UnityEvent();
+
+    public bool IsOpen = false;
 
     
     List<( int, Transform )> childrenTransformWithLayer = new List<( int, Transform )>();
@@ -33,6 +36,9 @@ public class InteractItem_Presentation : InteractableItemBase
         {
             AppGameManager.Instance.AppSoundController.AddAudioSourceParam( audioSource, false );
         }
+
+        // AppGameManager.Instance.ScreenSizeChanged.AddListener( OnScreenSizeChanged );
+        AppGameManager.Instance.BindScreenSize( gameObject, OnScreenSizeChanged );
     }
 
     void Update()
@@ -47,7 +53,11 @@ public class InteractItem_Presentation : InteractableItemBase
     }
 
     public override void OnClick()
-    {
+    {       
+
+        IsOpen = true;
+        AppGameManager.Instance.CloseHtmlHeader();
+
         base.OnClick();
         Debug.Log( "プレゼン開始" );
 
@@ -61,16 +71,10 @@ public class InteractItem_Presentation : InteractableItemBase
             tpl.childTransform.gameObject.layer = AppGameManager.Instance.AttentionLayerNum;
         }
 
-        AppGameManager.Instance.SetPresentation( this );
-        
-        if( Screen.width > Screen.height )
-        {
-            UiUtility.SetRectTransformStretch( presentationRect, 20f, 20f, Screen.width / 6f, 20f );
-        }
-        else 
-        {
-            UiUtility.SetRectTransformStretch( presentationRect, 20f, Screen.height / 5f, 20f, 20f );
-        }
+        AppGameManager.Instance.SetPresentation( this, true );
+
+        UiUtility.SetRectTransformStretch( presentationRect, 20f, 20f, 20f, 20f );
+        presentationRect.anchoredPosition = Vector2.zero;
         presentationTransition.TransitionIn( null, false, true );
 
         AppGameManager.Instance.CurrentLock.Move = true;
@@ -81,10 +85,44 @@ public class InteractItem_Presentation : InteractableItemBase
         ItemClickedEvent?.Invoke();
     }
 
+
+    void OnScreenSizeChanged( Vector2 size )
+    {
+        if( IsOpen == false ) return;
+
+        childrenTransformWithLayer = GetAllChildrenWithLayer( gameObject );
+        AppGameManager.Instance.SetMoveUI( false );
+        foreach( ( int layerNum, Transform childTransform ) tpl in childrenTransformWithLayer )
+        {
+            // SUbUIレイヤーは変更しない.
+            if( tpl.layerNum == 6 ) continue;
+            tpl.childTransform.gameObject.layer = AppGameManager.Instance.AttentionLayerNum;
+        }
+
+        AppGameManager.Instance.SetPresentation( this, false );
+
+        UiUtility.SetRectTransformStretch( presentationRect, 20f, 20f, 20f, 20f );
+        presentationRect.anchoredPosition = Vector2.zero;
+      
+        AppGameManager.Instance.CurrentLock.Move = true;
+        AppGameManager.Instance.CurrentLock.Rotation = true;
+        AppGameManager.Instance.CurrentLock.Click = true;
+        AppGameManager.Instance.CurrentLock.Look = true;       
+    }
+
+    public void Test()
+    {
+        OnScreenSizeChanged( Vector2.one );
+        // OnClick();
+    }
+
     
 
     public void OnPresentationEndButtonClicked()
-    {
+    { 
+        IsOpen = false;
+        AppGameManager.Instance.OpenHtmlHeader();
+
         foreach( ( int layerNum, Transform childTransform ) tpl in childrenTransformWithLayer )
         {
             tpl.childTransform.gameObject.layer = tpl.layerNum;

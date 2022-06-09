@@ -25,9 +25,9 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     private static extern void OpenUrlNewWindow( string url );
 
     [DllImport("__Internal")]
-    private static extern void OpenMenu();
+    private static extern void OpenHeader();
     [DllImport("__Internal")]
-    private static extern void CloseMenu();
+    private static extern void CloseHeader();
 
     [DllImport("__Internal")]
     private static extern void SetMenuState( string state );
@@ -119,8 +119,8 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
 
     // public bool IsOpenHtmlMenu{ get; private set; } = true;
     public HtmlMenuState CurrentHtmlMenuState{ get; private set; } = HtmlMenuState.Mute;
-    public bool isHtmlMenuOpen{ get; private set; } = true;
-    public bool isHtmlMenu_MenuIconDisplay{ get; private set; } = true;
+    public bool IsHtmlHeaderOpen{ get; private set; } = true;
+    public bool IsHtmlMenu_MenuIconDisplay{ get; private set; } = true;
 
     // 現在のロック状態.
     public Lock CurrentLock = new Lock();
@@ -142,7 +142,7 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     public int AttentionLayerNum{ get; } = 7;
 
 
-    public class PresentationEvent : UnityEvent<InteractItem_Presentation>{}
+    public class PresentationEvent : UnityEvent<InteractItem_Presentation, bool>{}
     public PresentationEvent PresentationStartEvent = new PresentationEvent();
     public UnityEvent PresentationEndEvent = new UnityEvent();
     public UnityEvent xButtonEvent = new UnityEvent();
@@ -295,6 +295,8 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
         // touchDebugText.text = "W : " + Screen.width + " H : " + Screen.height;
 
         UpdateRotation();
+
+        platformText.text = Platform.Device + "(" + Platform.OS + ")\n" + currentScreen + "\n(" + Screen.width + ", " + Screen.height + ")" ;
 
     }
 
@@ -691,9 +693,9 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
 
 
 
-    public void SetPresentation( InteractItem_Presentation presentationItem )
+    public void SetPresentation( InteractItem_Presentation presentationItem, bool isOpen )
     {
-        PresentationStartEvent?.Invoke( presentationItem );
+        PresentationStartEvent?.Invoke( presentationItem, isOpen );
     }
 
     public void EndPresentation()
@@ -871,7 +873,7 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
         OpenUrl( "https://daijimomii.github.io/WebGl_PVSample_Info/" );
     }
 
-    public void ChangeScreenWidth( int width )
+    public void ResizeScreenWidth( int width )
     {
         Debug.Log( "HTMLからのコール Width : " + width );
         currentScreen.x = width;
@@ -880,7 +882,7 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
         platformText.text = Platform + " / " + currentScreen;
     }
 
-    public void ChangeScreenHeight( int height )
+    public void ResizeScreenHeight( int height )
     {
         Debug.Log( "HTMLからのコール Hight : " + height );
         currentScreen.y = height;
@@ -915,21 +917,33 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
         // log3.text += log + "\n";
     }
 
-
-    public void OnMenuButtonClicked()
+    public void OpenHtmlHeader()
     {
-        if( isHtmlMenuOpen == true )
-        {
-            CloseMenu();
-            isHtmlMenuOpen = false;
-        }
-        else
-        {
-            OpenMenu();
-            isHtmlMenuOpen = true;
-        }
-
+        if( Application.platform != RuntimePlatform.WindowsEditor && Application.platform != RuntimePlatform.OSXEditor ) OpenHeader();
+        IsHtmlHeaderOpen = true;
     }
+
+    public void CloseHtmlHeader()
+    {
+        if( Application.platform != RuntimePlatform.WindowsEditor && Application.platform != RuntimePlatform.OSXEditor ) CloseHeader();
+        IsHtmlHeaderOpen = false;
+    }
+
+
+    // public void OnMenuButtonClicked()
+    // {
+    //     if( IsHtmlMenuOpen == true )
+    //     {
+    //         CloseMenu();
+    //         IsHtmlMenuOpen = false;
+    //     }
+    //     else
+    //     {
+    //         OpenMenu();
+    //         IsHtmlMenuOpen = true;
+    //     }
+
+    // }
 
     public void OnHtmlMenuButtonClicked()
     {
@@ -974,15 +988,15 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
 
     public void OnHtmlMenuIconDisplay()
     {
-        if( isHtmlMenu_MenuIconDisplay == true )
+        if( IsHtmlMenu_MenuIconDisplay == true )
         {
             SetMenuIconDisplay( false );
-            isHtmlMenu_MenuIconDisplay = false;
+            IsHtmlMenu_MenuIconDisplay = false;
         }
         else
         {
             SetMenuIconDisplay( true );
-            isHtmlMenu_MenuIconDisplay = true;
+            IsHtmlMenu_MenuIconDisplay = true;
         }
     }
 
@@ -999,5 +1013,26 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
         // else sideMenu.Close();
 
         appSoundController.TestVolumeSetting();
+    }
+
+
+    void BindScreenWidth( GameObject go, UnityAction<Vector2> action )
+    {
+        this.ObserveEveryValueChanged( x => Screen.width )
+        .Subscribe( x => action?.Invoke( new Vector2( Screen.width, Screen.height ) ) )
+        .AddTo( go );
+    }
+
+    void BindScreenHeight( GameObject go, UnityAction<Vector2> action )
+    {
+        this.ObserveEveryValueChanged( x => Screen.height )
+        .Subscribe( x => action?.Invoke( new Vector2( Screen.width, Screen.height ) ) )
+        .AddTo( go );
+    }
+
+    public void BindScreenSize( GameObject go, UnityAction<Vector2> action )
+    {
+        BindScreenWidth( go, action );
+        BindScreenHeight( go, action );
     }
 }

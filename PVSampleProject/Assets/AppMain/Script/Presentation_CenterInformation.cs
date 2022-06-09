@@ -16,6 +16,9 @@ public class Presentation_CenterInformation : MonoBehaviour
 
     // 開始時に表示するメニューのトランジション.
     [SerializeField] UITransition startMenuRootTransition = null;
+    //
+    [SerializeField] RectTransform startMenuRootRect = null;
+    [SerializeField] VerticalLayoutGroup startMenuLayout = null;
     // 動画.
     [SerializeField] MovieMonitor movie = null;
     // UIの自動Hide.
@@ -30,9 +33,9 @@ public class Presentation_CenterInformation : MonoBehaviour
     // アニメーター.
     [SerializeField] Animator anim = null;
 
-
     // 動画再生管理クラス.
     PvDistributedVideoPlayer video = null;
+    InteractItem_Presentation interact = null;
 
     void Start()
     {
@@ -40,17 +43,58 @@ public class Presentation_CenterInformation : MonoBehaviour
         autoHide.IsActiveAutoHide = false;
         // autoHide.gameObject.SetActive( false );
         playPauseButton.gameObject.SetActive( false );
+        interact = GetComponent<InteractItem_Presentation>();
 
         AppGameManager.Instance.PresentationStartEvent.AddListener( OnPresentationStarted );
         AppGameManager.Instance.PresentationEndEvent.AddListener( OnPresentationEnd );
+        AppGameManager.Instance.BindScreenSize( gameObject, OnScreenSizeChanged );
 
         Init();
+    }
+
+    void Update()
+    {
+        UpdateSize();
     }
 
     void Init()
     {
         // if( video == null ) video = AppGameManager.Instance.AppVideoController.GetUniqueVideo( movie.FileName );
         if( video == null ) video = AppGameManager.Instance.AppSoundController.GetVideo( movie.FileName );
+    }
+    
+    void UpdateSize()
+    {
+        if( interact.IsOpen == false ) return;
+
+        // バインドするとScreenサイズ変化と取得のタイミングが合わないので、Updateでフラグをつけて設定する.
+        movie.SetSize( false );
+        var _width = (float)Screen.width;
+        var _height = (float)Screen.height;
+        UiUtility.SetRectTransformStretch( startMenuRootRect, 0, 0, _width * 0.1f, _width * 0.1f );
+        // def : 0 0 80 80
+        if( Screen.width > Screen.height )
+        {
+            var _left = _width * 0.1f;
+            startMenuLayout.padding.left = (int)_left;
+            startMenuLayout.padding.bottom = 80;
+        }
+        else
+        {
+            var _bottom = _height * 0.2f;
+            startMenuLayout.padding.left = 0;
+            startMenuLayout.padding.bottom = (int)_bottom;
+        }        
+    }
+
+
+    void OnScreenSizeChanged( Vector2 size )
+    {
+    }
+
+    public void Test()
+    {
+        // OnScreenSizeChanged( Vector2.one );
     }
 
     public void OnWhatPVButtonClicked() 
@@ -88,8 +132,10 @@ public class Presentation_CenterInformation : MonoBehaviour
         CloseStartMenu();
     }
 
-    void OnPresentationStarted( InteractItem_Presentation item )
+    void OnPresentationStarted( InteractItem_Presentation item, bool isOpen )
     {
+        if( isOpen == false ) return;
+
         // AppGameManager.Instance.AppVideoController.SetReadyUniqueVideo( movie.FileName, 2 );
         AppGameManager.Instance.AppSoundController.SetReadyVideo( movie.FileName, 2 );
         OpenStartMenu();
@@ -133,6 +179,22 @@ public class Presentation_CenterInformation : MonoBehaviour
 
     public void OnItemClicked()
     {
+        var _width = (float)Screen.width;
+        var _height = (float)Screen.height;
+        UiUtility.SetRectTransformStretch( startMenuRootRect, 0, 0, _width * 0.1f, _width * 0.1f );
+        // def : 0 0 80 80
+        if( Screen.width > Screen.height )
+        {
+            var _left = _width * 0.1f;
+            startMenuLayout.padding.left = (int)_left;
+            startMenuLayout.padding.bottom = 80;
+        }
+        else
+        {
+            var _bottom = _height * 0.2f;
+            startMenuLayout.padding.left = 0;
+            startMenuLayout.padding.bottom = (int)_bottom;
+        }
         // キャラクリックじInspector登録用.
         SetAnim( AnimationState.Ojigi );
     }
