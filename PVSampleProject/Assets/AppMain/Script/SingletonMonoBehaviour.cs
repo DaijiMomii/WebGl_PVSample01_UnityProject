@@ -124,4 +124,95 @@ public class MonoBehaviourWithInit : MonoBehaviour
     protected virtual void Awake (){}
 
 
+    
+    // -------------------------------------------------------------------------------------
+    /// <summary>
+    /// プラグインから実行するためのプラットフォーム判定.
+    /// </summary>
+    /// <param name="platformKey"></param>
+    // -------------------------------------------------------------------------------------
+    // public void SetDevice( string deviceKey )
+    // {
+    //     Debug.Log( "Device : " + deviceKey );
+
+    //     switch( deviceKey )
+    //     {
+    //         case "iPhone":
+    //         {
+    //             Platform.Device = Device.iPhone;
+    //         }
+    //         break;
+    //         case "android":
+    //         {
+    //             Platform.Device = Device.android;
+    //         }
+    //         break;
+    //         case "iPad":
+    //         {
+    //             Platform.Device = Device.iPad;
+    //         }
+    //         break;
+    //         case "androidTab":
+    //         {
+    //             Platform.Device = Device.androidTab;
+    //         }
+    //         break;
+    //         case "iOSOther":
+    //         {
+    //             Platform.Device = Device.iOSOther;
+    //         }
+    //         break;
+    //         default:
+    //         {
+    //             Platform.Device = Device.Unknown;
+    //         }
+    //         break;
+    //     }
+    // }
+
+    // public void SetOS( string osKey )
+    // {
+    //     Debug.Log( "OS : " + osKey );
+
+    //     switch( osKey )
+    //     {
+    //         case "Windows":
+    //         {
+    //             Platform.OS = OS.Windows;
+    //         }
+    //         break;
+    //         case "android":
+    //         {
+    //             Platform.OS = OS.Android;
+    //         }
+    //         break;
+    //         case "iOS":
+    //         {
+    //             Platform.OS = OS.iOS;
+    //         }
+    //         break;
+    //         case "OSX":
+    //         {
+    //             Platform.OS = OS.OSX;
+    //         }
+    //         break;
+    //         default:
+    //         {
+    //             Platform.OS = OS.Unknown;
+    //         }
+    //         break;
+    //     }
+
+    //     // platformText.text = Platform.OS + "(" + Platform.OS + ")";
+    // }
+    
+
+    // public void TestLink()
+    // {
+    //     Debug.Log( "https://daijimomii.github.io/WebGl_PVSample_Info/  にアクセスします" );
+    //     // Application.OpenURL( "https://daijimomii.github.io/WebGl_PVSample_Info/" );
+    //     OpenUrl( "https://daijimomii.github.io/WebGl_PVSample_Info/" );
+    // }
+
+
 }

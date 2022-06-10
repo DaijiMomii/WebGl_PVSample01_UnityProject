@@ -154,7 +154,7 @@ public class AppSoundController : MonoBehaviour
 
     public void OnHtmlInit( bool isMute = false )
     {
-        Debug.Log( "@@@@@@... HTMLのVideoInit" );  
+        Debug.Log( "@@@@@@... HTMLのSoundInit" );  
 
         foreach( var video in Videos )
         {
@@ -200,6 +200,8 @@ public class AppSoundController : MonoBehaviour
             {
                 if( _os == AppGameManager.OS.iOS ) video.Video.SetDirectAudioMute( 0, true );
                 else video.Video.SetDirectAudioMute( 0, false );
+
+                // video.Video.SetDirectAudioMute( 0, true );
             }
 
             video.Video.SetDirectAudioVolume( 0, 0 );  
@@ -212,6 +214,8 @@ public class AppSoundController : MonoBehaviour
             {
                 if( _os == AppGameManager.OS.iOS ) video.Video.SetDirectAudioMute( 0, true );
                 else video.Video.SetDirectAudioMute( 0, false );
+
+                // video.Video.SetDirectAudioMute( 0, true );
             }
 
             video.Video.SetDirectAudioVolume( 0, 0 );  

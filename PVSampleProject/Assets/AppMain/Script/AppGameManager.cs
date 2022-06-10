@@ -13,27 +13,40 @@ using UnityEngine.Networking;
 public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
 {
     
-    // プラグインインポート端末情報の取得.
-    [DllImport("__Internal")]
-    private static extern void DeviceInformation();
-    [DllImport("__Internal")]
-    private static extern void OSInformation();
-    // プラグインインポートURLを開く.
-    [DllImport("__Internal")]
-    private static extern void OpenUrl( string url );
-    [DllImport("__Internal")]
-    private static extern void OpenUrlNewWindow( string url );
+    // // プラグインインポート端末情報の取得.
+    // [DllImport("__Internal")]
+    // private static extern void DeviceInformation();
+    // [DllImport("__Internal")]
+    // private static extern void OSInformation();
+    // // プラグインインポートURLを開く.
+    // [DllImport("__Internal")]
+    // private static extern void OpenUrl( string url );
+    // [DllImport("__Internal")]
+    // private static extern void OpenUrlNewWindow( string url );
 
-    [DllImport("__Internal")]
-    private static extern void OpenHeader();
-    [DllImport("__Internal")]
-    private static extern void CloseHeader();
+    // [DllImport("__Internal")]
+    // private static extern void OpenHeader();
+    // [DllImport("__Internal")]
+    // private static extern void CloseHeader();
 
-    [DllImport("__Internal")]
-    private static extern void SetMenuState( string state );
+    // // [DllImport("__Internal")]
+    // // private static extern void SetMenuState( string state );
 
-    [DllImport("__Internal")]
-    private static extern void SetMenuIconDisplay( bool isDisplay );
+    // [DllImport("__Internal")]
+    // private static extern void SetMenuIconDisplay( bool isDisplay );
+
+    // [DllImport("__Internal")]
+    // private static extern void SetSoundIconDisplay( bool isDisplay );
+
+    // [DllImport("__Internal")]
+    // private static extern void SetMuteIconDisplay( bool isDisplay );
+
+    // [DllImport("__Internal")]
+    // private static extern void SetMute( bool isMute );
+    
+    
+    
+    
 
     
 
@@ -46,11 +59,6 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     public enum MouseAction
     {
         None, Down, Hold, Up,
-    }
-
-    public enum HtmlMenuState
-    {
-        SoundOn, Mute
     }
 
     public enum Device
@@ -89,7 +97,7 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     // 画面中心Rayのマスク.
     [SerializeField] LayerMask centerRayMask = default(LayerMask);
     // プレイヤー.
-    [SerializeField] AppPlayerController player = null;
+    // [SerializeField] AppPlayerController player = null;
     //
     [SerializeField] AppSkyDomeControl skyDome = null;
     //
@@ -115,12 +123,23 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     [SerializeField] RectTransform pcKeyRect = null;
 
     [SerializeField] AppSideMenu sideMenu = null;
+    [SerializeField] AppHtmlReceiver htmlReceiver = null;
+    
 
 
-    // public bool IsOpenHtmlMenu{ get; private set; } = true;
-    public HtmlMenuState CurrentHtmlMenuState{ get; private set; } = HtmlMenuState.Mute;
-    public bool IsHtmlHeaderOpen{ get; private set; } = true;
-    public bool IsHtmlMenu_MenuIconDisplay{ get; private set; } = true;
+    // public bool IsHtmlMute{ get; private set; } = true;
+    // public bool IsHtmlHeaderOpened{ get; private set; } = true;
+    // public bool HtmlMenu_MenuIconDisplay{ get; private set; } = true;
+    // public bool HtmlMenu_SoundIconDisplay{ get; private set; } = true;
+    // public bool HtmlMenu_MuteIconDisplay{ get; private set; } = true;
+
+    public bool IsHtmlMute{ get{ return htmlReceiver.IsHtmlMute; } set{ htmlReceiver.IsHtmlMute = value; } }
+    public bool IsHtmlHeaderOpened{ get{ return htmlReceiver.IsHtmlHeaderOpened; } set{ htmlReceiver.IsHtmlHeaderOpened = value; } }
+    public bool HtmlMenu_MenuIconDisplay{ get{ return htmlReceiver.HtmlMenu_MenuIconDisplay; } set{ htmlReceiver.HtmlMenu_MenuIconDisplay = value; } }
+    public bool HtmlMenu_SoundIconDisplay{ get{ return htmlReceiver.HtmlMenu_SoundIconDisplay; } set{ htmlReceiver.HtmlMenu_SoundIconDisplay = value; } }
+    public bool HtmlMenu_MuteIconDisplay{ get{ return htmlReceiver.HtmlMenu_MuteIconDisplay; } set{ htmlReceiver.HtmlMenu_MuteIconDisplay = value; } }
+
+    public DeviceParam Platform{ get{ return htmlReceiver.Platform; } set{ htmlReceiver.Platform = value; } }
 
     // 現在のロック状態.
     public Lock CurrentLock = new Lock();
@@ -142,6 +161,27 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     public int AttentionLayerNum{ get; } = 7;
 
 
+    public AppSoundController SoundController{ get{ return appSoundController; } }
+    public AppSideMenu SideMenu{ get{ return sideMenu; } }
+
+
+    public class TouchEvent : UnityEvent<Touch>{}
+
+    public UnityEvent UpdateEvent_ClickCameraRotation{ get; set; } = new UnityEvent();
+
+    public TouchEvent UpdateEvent_TouchCameraRotation{ get; set; } = new TouchEvent();
+    
+
+
+    public UnityEvent UpdateEvent_ResetCameraRotation{ get; set; } = new UnityEvent();
+
+
+    public UnityEvent OpenWebPageEvent { get; set; } = new UnityEvent();
+
+
+
+
+
     public class PresentationEvent : UnityEvent<InteractItem_Presentation, bool>{}
     public PresentationEvent PresentationStartEvent = new PresentationEvent();
     public UnityEvent PresentationEndEvent = new UnityEvent();
@@ -152,12 +192,12 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
 
     public AppSoundController AppSoundController{ get{ return appSoundController; } }
 
-    public DeviceParam Platform{ get; private set; } = new DeviceParam();
+    public Vector2? PhoneUiInput{ get; private set; } = null;
 
     // 移動用のクリック開始位置.
     Vector3? startMoveMousePosition = null;
 
-    Vector2 currentScreen = Vector2.zero;
+    // Vector2 currentScreen = Vector2.zero;
 
 
     InteractableItemBase currentCursorRayHit = null;
@@ -180,43 +220,43 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
 
     void Start()
     {
-        if( Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.OSXEditor )
-        {
-            platformText.text = "Editor";
-            Platform.Device = Device.Editor;
-            Platform.OS = OS.Editor;
-        }
-        else
-        {            
-            DeviceInformation();
-            OSInformation();
-        }
+        // if( Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.OSXEditor )
+        // {
+        //     platformText.text = "Editor";
+        //     Platform.Device = Device.Editor;
+        //     Platform.OS = OS.Editor;
+        // }
+        // else
+        // {            
+        //     DeviceInformation();
+        //     OSInformation();
+        // }
 
-        platformText.text = Platform.Device + "(" + Platform.OS + ")";
+        // platformText.text = Platform.Device + "(" + Platform.OS + ")";
 
-        if( Platform.OS == OS.Editor )
-        {
-            pcKeyRect.gameObject.SetActive( true );
-            phoneStickRect.gameObject.SetActive( true );
-        }
-        else if( Platform.OS == OS.OSX || Platform.OS == OS.Windows )
-        {
-            pcKeyRect.gameObject.SetActive( true );
-            phoneStickRect.gameObject.SetActive( false );
-        }
-        else
-        {            
-            pcKeyRect.gameObject.SetActive( false );
-            phoneStickRect.gameObject.SetActive( true );
-        }
-
-
+        // if( Platform.OS == OS.Editor )
+        // {
+        //     pcKeyRect.gameObject.SetActive( true );
+        //     phoneStickRect.gameObject.SetActive( true );
+        // }
+        // else if( Platform.OS == OS.OSX || Platform.OS == OS.Windows )
+        // {
+        //     pcKeyRect.gameObject.SetActive( true );
+        //     phoneStickRect.gameObject.SetActive( false );
+        // }
+        // else
+        // {            
+        //     pcKeyRect.gameObject.SetActive( false );
+        //     phoneStickRect.gameObject.SetActive( true );
+        // }
 
 
-        if( currentScreen.x == 0 ) currentScreen.x = Screen.width;
-        if( currentScreen.y == 0 ) currentScreen.y = Screen.height;
 
 
+        // if( currentScreen.x == 0 ) currentScreen.x = Screen.width;
+        // if( currentScreen.y == 0 ) currentScreen.y = Screen.height;
+
+        // セーブデータ（キャッシュ削除で消える）のテスト.
         int _data = 0;
         if( PlayerPrefs.HasKey( "TestSaveData" ) == true )
         {
@@ -230,39 +270,6 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
             PlayerPrefs.SetInt( "TestSaveData", 0 );
             _data = 0;
         }
-
-        // Debug.Log( "SaveData @@@ " + _data );
-        // platformText.text += " : " + _data;
-        
-        // var _jsonS = new JsonSample();
-        // _jsonS.Name = "Sample@";
-        // var _json = JsonUtility.ToJson( _jsonS );
-        // Debug.Log( _json );
-
-
-
-        // var _path = Application.streamingAssetsPath + "/Sample.json";
-        // string data = File.ReadAllText(_path);
-        // // var request = UnityWebRequest.Get( _path );
-        // // await request.SendWebRequest();
-        // // var jsonText = request.downloadHandler.text;
-        // Debug.Log( "@ " + data );
-        // platformText.text += "\nb@ : " + data;
-        // var _jsonSample = JsonUtility.FromJson<JsonSample>( data );
-        // _jsonSample.Name += "A";
-        // _jsonSample.Int ++;
-        // var _newJsonText = JsonUtility.ToJson( _jsonSample );
-        // Debug.Log( "@@ " + _newJsonText );
-       
-
-        // // 書き込み
-        // // 書き込み
-        // File.WriteAllText(_path, _newJsonText);
-
-        // Debug.Log( "@@@ " + _newJsonText );
-        // platformText.text += "\na@ : " + _newJsonText;
-
-
     }
 
 
@@ -296,9 +303,32 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
 
         UpdateRotation();
 
-        platformText.text = Platform.Device + "(" + Platform.OS + ")\n" + currentScreen + "\n(" + Screen.width + ", " + Screen.height + ")" ;
-
     }
+
+    public void Debug_SetPlatformText( string log, bool isAdd = false )
+    {
+        if( isAdd == false ) platformText.text = log;
+        else platformText.text += log;
+    }
+
+    public void InitMoveUi( OS os )
+    {
+        if( os == AppGameManager.OS.Editor )
+        {
+            pcKeyRect.gameObject.SetActive( true );
+            phoneStickRect.gameObject.SetActive( true );
+        }
+        else if( os == OS.OSX || os == OS.Windows )
+        {
+            pcKeyRect.gameObject.SetActive( true );
+            phoneStickRect.gameObject.SetActive( false );
+        }
+        else
+        {            
+            pcKeyRect.gameObject.SetActive( false );
+            phoneStickRect.gameObject.SetActive( true );
+        }
+    } 
 
     // -------------------------------------------------------------------------------------
     /// <summary>
@@ -448,7 +478,11 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
         // マウスクリック.
         if( Input.GetMouseButton( 0 ) == true && Input.touchCount == 0 )
         {
-            if( IsClickRotationLock == false ) player.UpdateClickCameraRotation();
+            if( IsClickRotationLock == false )
+            {
+                // player.UpdateClickCameraRotation();
+                UpdateEvent_ClickCameraRotation?.Invoke();
+            }
         }
         else if( Input.touchCount > 0 )
         {
@@ -478,22 +512,26 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
 
                 if( CurrentRotationFingerId != _currentFinger.fingerId )
                 {
-                    player.ResetRotationValue();
+                    // player.ResetRotationValue();
+                    UpdateEvent_ResetCameraRotation?.Invoke();
                 }
-                player.UpdateTouchCameraRotation( _currentFinger );
+                // player.UpdateTouchCameraRotation( _currentFinger );
+                UpdateEvent_TouchCameraRotation?.Invoke( _currentFinger );
                 CurrentRotationFingerId = _currentFinger.fingerId;
             }
             else
             {                
                 Debug.Log( _touchList.Count + " : @4" );
-                player.ResetRotationValue();
+                // player.ResetRotationValue();
+                UpdateEvent_ResetCameraRotation?.Invoke();
                 CurrentRotationFingerId = -1;
             }
         }
         else if( Input.touchCount == 0 )
         {
             CurrentNonRotationFingerId.Clear();
-            player.ResetRotationValue();
+            // player.ResetRotationValue();
+            UpdateEvent_ResetCameraRotation?.Invoke();
             CurrentRotationFingerId = -1;
         }
     }
@@ -534,7 +572,7 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     {
         stickImageRect.anchoredPosition = Vector3.zero;
         startMoveMousePosition = null;
-        player.PhoneUiInput = null;
+        PhoneUiInput = null;
         IsClickRotationLock = false;
 
 
@@ -644,7 +682,7 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
 
             stickImageRect.anchoredPosition = _current;
 
-            var _playerInput = player.PhoneUiInput;
+            var _playerInput = PhoneUiInput;
             if( _playerInput == null ) 
             {
                 _playerInput = new Vector2( _dir.x, _dir.y );
@@ -657,7 +695,7 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
                 _playerInput = _in;
             }
 
-            player.PhoneUiInput = _playerInput;
+            PhoneUiInput = _playerInput;
         }        
     }
     
@@ -666,28 +704,33 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     /// URLにアクセス.
     /// </summary>
     /// <param name="url"></param>
-    // -------------------------------------------------------------------------------------
-    public void AccessUrl( string url, bool isNewWindow = false )
+    // // -------------------------------------------------------------------------------------
+    // public void AccessUrl( string url, bool isNewWindow = false )
+    // {
+    //     Debug.Log( url + " にアクセスします" );
+
+    //     // CurrentLock.Move = true;
+    //     // CurrentLock.Rotation = true;
+    //     player.StopPlayer();
+
+    //     if( Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.OSXEditor )
+    //     {
+    //         Debug.Log( "Editorでは通常のApplication.OpenURL()を使用します" );
+    //         Application.OpenURL( url );
+    //     }
+    //     else if( isNewWindow == false )
+    //     {
+    //         OpenUrl( url );
+    //     }
+    //     else
+    //     {
+    //         OpenUrlNewWindow( url );
+    //     }
+    // }
+
+    public void OpenWebPage( string url, bool isNewWindow = false )
     {
-        Debug.Log( url + " にアクセスします" );
-
-        // CurrentLock.Move = true;
-        // CurrentLock.Rotation = true;
-        player.StopPlayer();
-
-        if( Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.OSXEditor )
-        {
-            Debug.Log( "Editorでは通常のApplication.OpenURL()を使用します" );
-            Application.OpenURL( url );
-        }
-        else if( isNewWindow == false )
-        {
-            OpenUrl( url );
-        }
-        else
-        {
-            OpenUrlNewWindow( url );
-        }
+        htmlReceiver.OpenWebPage( url, isNewWindow );
     }
 
 
@@ -780,154 +823,50 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
         if( popupBgTransition.IsOpen == true ) popupBgTransition.TransitionOut();
     }
 
+    // public void ResizeScreenWidth( int width )
+    // {
+    //     Debug.Log( "HTMLからのコール Width : " + width );
+    //     currentScreen.x = width;
+    //     ScreenSizeChanged?.Invoke( currentScreen );
 
-    
-    // -------------------------------------------------------------------------------------
-    /// <summary>
-    /// プラグインから実行するためのプラットフォーム判定.
-    /// </summary>
-    /// <param name="platformKey"></param>
-    // -------------------------------------------------------------------------------------
-    public void SetDevice( string deviceKey )
-    {
-        Debug.Log( "Device : " + deviceKey );
+    //     platformText.text = Platform + " / " + currentScreen;
+    // }
 
-        switch( deviceKey )
-        {
-            case "iPhone":
-            {
-                Platform.Device = Device.iPhone;
-            }
-            break;
-            case "android":
-            {
-                Platform.Device = Device.android;
-            }
-            break;
-            case "iPad":
-            {
-                Platform.Device = Device.iPad;
-            }
-            break;
-            case "androidTab":
-            {
-                Platform.Device = Device.androidTab;
-            }
-            break;
-            case "iOSOther":
-            {
-                Platform.Device = Device.iOSOther;
-            }
-            break;
-            default:
-            {
-                Platform.Device = Device.Unknown;
-            }
-            break;
-        }
+    // public void ResizeScreenHeight( int height )
+    // {
+    //     Debug.Log( "HTMLからのコール Hight : " + height );
+    //     currentScreen.y = height;
+    //     ScreenSizeChanged?.Invoke( currentScreen );
 
-        // platformText.text = Platform.OS + "(" + Platform.OS + ")";
-    }
-
-    public void SetOS( string osKey )
-    {
-        Debug.Log( "OS : " + osKey );
-
-        switch( osKey )
-        {
-            case "Windows":
-            {
-                Platform.OS = OS.Windows;
-            }
-            break;
-            case "android":
-            {
-                Platform.OS = OS.Android;
-            }
-            break;
-            case "iOS":
-            {
-                Platform.OS = OS.iOS;
-            }
-            break;
-            case "OSX":
-            {
-                Platform.OS = OS.OSX;
-            }
-            break;
-            default:
-            {
-                Platform.OS = OS.Unknown;
-            }
-            break;
-        }
-
-        // platformText.text = Platform.OS + "(" + Platform.OS + ")";
-    }
-    
-
-    public void TestLink()
-    {
-        Debug.Log( "https://daijimomii.github.io/WebGl_PVSample_Info/  にアクセスします" );
-        // Application.OpenURL( "https://daijimomii.github.io/WebGl_PVSample_Info/" );
-        OpenUrl( "https://daijimomii.github.io/WebGl_PVSample_Info/" );
-    }
-
-    public void ResizeScreenWidth( int width )
-    {
-        Debug.Log( "HTMLからのコール Width : " + width );
-        currentScreen.x = width;
-        ScreenSizeChanged?.Invoke( currentScreen );
-
-        platformText.text = Platform + " / " + currentScreen;
-    }
-
-    public void ResizeScreenHeight( int height )
-    {
-        Debug.Log( "HTMLからのコール Hight : " + height );
-        currentScreen.y = height;
-        ScreenSizeChanged?.Invoke( currentScreen );
-
-        platformText.text = Platform + " / " + currentScreen;
-    }
+    //     platformText.text = Platform + " / " + currentScreen;
+    // }
 
 
-    public void OnAppStarted()
-    {
-        Debug.Log( "<<  WebGl App 開始.  >>" );
-        // AddLog( " WebGl App Start" );
+    // public void OnAppStarted()
+    // {
+    //     Debug.Log( "<<  WebGl App 開始.  >>" );
+    //     // AddLog( " WebGl App Start" );
 
-        // AppStop();
-    }
+    //     // AppStop();
+    // }
 
-    public void OnHtmlInitButtonClicked()
-    {
-        Debug.Log( "HTMLのMuteボタンクリック" );
+    // public void OnHtmlInitButtonClicked()
+    // {
+    //     Debug.Log( "HTMLのMuteボタンクリック" );
 
-        appSoundController.OnHtmlInit();
-        CurrentLock.Click = false;
-        CurrentLock.Look = false;
-        CurrentLock.Move = false;
-        CurrentLock.Rotation = false;
-    }
+    //     appSoundController.OnHtmlInit();
+    //     CurrentLock.Click = false;
+    //     CurrentLock.Look = false;
+    //     CurrentLock.Move = false;
+    //     CurrentLock.Rotation = false;
+    // }
 
 
-    public void AddLog( string log )
-    {
-        // log3.text += log + "\n";
-    }
+    // public void AddLog( string log )
+    // {
+    //     // log3.text += log + "\n";
+    // }
 
-    public void OpenHtmlHeader()
-    {
-        if( Application.platform != RuntimePlatform.WindowsEditor && Application.platform != RuntimePlatform.OSXEditor ) OpenHeader();
-        IsHtmlHeaderOpen = true;
-    }
-
-    public void CloseHtmlHeader()
-    {
-        if( Application.platform != RuntimePlatform.WindowsEditor && Application.platform != RuntimePlatform.OSXEditor ) CloseHeader();
-        IsHtmlHeaderOpen = false;
-    }
 
 
     // public void OnMenuButtonClicked()
@@ -945,59 +884,149 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
 
     // }
 
-    public void OnHtmlMenuButtonClicked()
-    {
-        if( sideMenu.IsOpen == false )
-        {
-            sideMenu.Open();
-            SetMoveUI( false );
-        }
-        else
-        {
-            sideMenu.Close();
-            SetMoveUI( true );
-        }
-    }
+    // public void OnHtmlMenuButtonClicked()
+    // {
+    //     if( sideMenu.IsOpen == false )
+    //     {
+    //         sideMenu.Open();
+    //         SetMoveUI( false );
 
-    public void OnHtmlMuteButtonClicked()
-    {        
-        appSoundController.OnHtmlInit();
+    //         HideHeader();
+    //     }
+    //     else
+    //     {
+    //         sideMenu.Close();
+    //         SetMoveUI( true );
 
-        if( CurrentHtmlMenuState == HtmlMenuState.Mute )
-        {            
-            appSoundController.OnHtmlInit( false );
-            appSoundController.OnHtmlMuteOff();
+    //         ShowHeader();
+    //     }
+    // }
 
-            SetMenuState( "SoundOn" );
-            CurrentHtmlMenuState = HtmlMenuState.SoundOn;
-        }
-        else if( CurrentHtmlMenuState == HtmlMenuState.SoundOn )
-        {
-            appSoundController.OnHtmlInit( true );
-            appSoundController.OnHtmlMuteOn();
+
+    // public void OnHtmlMuteButtonClicked()
+    // {        
+    //     // appSoundController.OnHtmlInit();
+
+    //     // if( CurrentHtmlMenuState == HtmlMenuState.Mute )
+    //     if( IsHtmlMute == true )
+    //     {            
+    //         appSoundController.OnHtmlInit( false );
+    //         appSoundController.OnHtmlMuteOff();
+
+    //         // SetMenuState( "SoundOn" );
+    //         SetMute( false );
+    //         // CurrentHtmlMenuState = HtmlMenuState.SoundOn;
+    //         IsHtmlMute = false;
+    //     }
+    //     else //if( CurrentHtmlMenuState == HtmlMenuState.SoundOn )
+    //     {
+    //         appSoundController.OnHtmlInit( true );
+    //         appSoundController.OnHtmlMuteOn();
             
-            SetMenuState( "Mute" );
-            CurrentHtmlMenuState = HtmlMenuState.Mute;
-        }
-        else
-        {
-            // OpenMenu();CurrentHtmlMenuState = HtmlMenuState.Mute;
-            Debug.LogWarning( "ヘッダーメニューが開いていません" );
-        }
+    //         // SetMenuState( "Mute" );
+    //         SetMute( true );
+    //         // CurrentHtmlMenuState = HtmlMenuState.Mute;
+    //         IsHtmlMute = true;
+    //     }
+    //     // else
+    //     // {
+    //     //     // OpenMenu();CurrentHtmlMenuState = HtmlMenuState.Mute;
+    //     //     Debug.LogWarning( "ヘッダーメニューが開いていません" );
+    //     // }
+    // }
+
+    // public void OnSetHtmlMute( bool isMute )
+    // {
+    //     if( isMute == true )
+    //     {
+    //         SetSoundIconDisplay( false );
+    //         HtmlMenu_SoundIconDisplay = false;
+    //     }
+    //     else
+    //     {
+    //         if( Platform.OS == OS.iOS || Platform.OS == OS.Android )
+    //         {
+    //             SetSoundIconDisplay( false );
+    //             HtmlMenu_SoundIconDisplay = false;
+    //         }
+    //         else
+    //         {
+    //             SetSoundIconDisplay( true );
+    //             HtmlMenu_SoundIconDisplay = true;
+    //         }
+    //     }
+    // }
+
+    // public void OnHtmlMenuIconDisplay()
+    // {
+    //     if( IsHtmlMenu_MenuIconDisplay == true )
+    //     {
+    //         SetMenuIconDisplay( false );
+    //         IsHtmlMenu_MenuIconDisplay = false;
+    //     }
+    //     else
+    //     {
+    //         SetMenuIconDisplay( true );
+    //         IsHtmlMenu_MenuIconDisplay = true;
+    //     }
+    // }
+
+    
+    
+    public void ShowHeader()
+    {
+        htmlReceiver.SetHeaderDisplay( true );
+        // if( Application.platform != RuntimePlatform.WindowsEditor && Application.platform != RuntimePlatform.OSXEditor ) OpenHeader();
+        IsHtmlHeaderOpened = true;
     }
 
-    public void OnHtmlMenuIconDisplay()
+    public void HideHeader()
     {
-        if( IsHtmlMenu_MenuIconDisplay == true )
-        {
-            SetMenuIconDisplay( false );
-            IsHtmlMenu_MenuIconDisplay = false;
-        }
-        else
-        {
-            SetMenuIconDisplay( true );
-            IsHtmlMenu_MenuIconDisplay = true;
-        }
+        htmlReceiver.SetHeaderDisplay( false );
+        // if( Application.platform != RuntimePlatform.WindowsEditor && Application.platform != RuntimePlatform.OSXEditor ) CloseHeader();
+        IsHtmlHeaderOpened = false;
+    }
+
+    public void ShowMenuButton()
+    {
+        htmlReceiver.SetIconDisplay( "Menu", true );
+        // SetMenuIconDisplay( true );
+        HtmlMenu_MenuIconDisplay = true;
+    }
+
+    public void HideMenuButton()
+    {
+        htmlReceiver.SetIconDisplay( "Menu", false );
+        // SetMenuIconDisplay( false );
+        HtmlMenu_MenuIconDisplay = false;
+    }
+
+    public void ShowSoundButton()
+    {
+        htmlReceiver.SetIconDisplay( "Sound", true );
+        // SetSoundIconDisplay( true );
+        HtmlMenu_SoundIconDisplay = true;
+    }
+
+    public void HideSoundButton()
+    {
+        htmlReceiver.SetIconDisplay( "Sound", false );
+        // SetSoundIconDisplay( false );
+        HtmlMenu_SoundIconDisplay = false;
+    }
+
+    public void ShowMuteButton()
+    {
+        htmlReceiver.SetIconDisplay( "Mute", true );
+        // SetMuteIconDisplay( true );
+        HtmlMenu_MuteIconDisplay = true;
+    }
+
+    public void HideMuteButton()
+    {
+        htmlReceiver.SetIconDisplay( "Mute", false );
+        // SetMuteIconDisplay( false );
+        HtmlMenu_MuteIconDisplay = false;
     }
 
 
@@ -1007,13 +1036,13 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     }
 
 
-    public void TestOpenSideMenu()
-    {
-        // if( sideMenu.IsOpen == false ) sideMenu.Open();
-        // else sideMenu.Close();
+    // public void TestOpenSideMenu()
+    // {
+    //     // if( sideMenu.IsOpen == false ) sideMenu.Open();
+    //     // else sideMenu.Close();
 
-        appSoundController.TestVolumeSetting();
-    }
+    //     appSoundController.TestVolumeSetting();
+    // }
 
 
     void BindScreenWidth( GameObject go, UnityAction<Vector2> action )

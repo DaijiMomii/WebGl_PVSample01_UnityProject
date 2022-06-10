@@ -38,5 +38,7 @@ public class AppSideMenu : MonoBehaviour
     {
         Close();
         AppGameManager.Instance.SetMoveUI( true );
+
+        AppGameManager.Instance.ShowHeader();
     }
 }

@@ -56,7 +56,8 @@ public class InteractItem_Presentation : InteractableItemBase
     {       
 
         IsOpen = true;
-        AppGameManager.Instance.CloseHtmlHeader();
+        // AppGameManager.Instance.CloseHtmlHeader();
+        AppGameManager.Instance.HideMenuButton();
 
         base.OnClick();
         Debug.Log( "プレゼン開始" );
@@ -121,7 +122,8 @@ public class InteractItem_Presentation : InteractableItemBase
     public void OnPresentationEndButtonClicked()
     { 
         IsOpen = false;
-        AppGameManager.Instance.OpenHtmlHeader();
+        // AppGameManager.Instance.OpenHtmlHeader();
+        AppGameManager.Instance.ShowMenuButton();
 
         foreach( ( int layerNum, Transform childTransform ) tpl in childrenTransformWithLayer )
         {

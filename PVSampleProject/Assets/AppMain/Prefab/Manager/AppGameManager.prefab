@@ -301,6 +301,49 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!1 &1203604397121886416
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8738736628469323035}
+  - component: {fileID: 8221723317341511766}
+  m_Layer: 0
+  m_Name: HtmlReceiver
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8738736628469323035
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1203604397121886416}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 7088581808938128075}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8221723317341511766
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1203604397121886416}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2bd2714c9f730844c96dcc5d7c6ab108, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1223878798647673413
 GameObject:
   m_ObjectHideFlags: 0
@@ -369,7 +412,7 @@ RectTransform:
   m_Children:
   - {fileID: 8839642621695486373}
   m_Father: {fileID: 7088581808938128075}
-  m_RootOrder: 5
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -707,7 +750,7 @@ RectTransform:
   - {fileID: 7697756613189846172}
   - {fileID: 7539570262843413479}
   m_Father: {fileID: 7088581808938128075}
-  m_RootOrder: 4
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -1123,7 +1166,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 7088581808938128075}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &3401518824556605159
 MonoBehaviour:
@@ -1299,7 +1342,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 7088581808938128075}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!20 &698471558306876291
 Camera:
@@ -1811,7 +1854,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 7088581808938128075}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2446759269102002293
 MonoBehaviour:
@@ -2282,7 +2325,7 @@ RectTransform:
   - {fileID: 308468728525685724}
   - {fileID: 7088581809612253182}
   m_Father: {fileID: 7088581808938128075}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -2754,6 +2797,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
+  - {fileID: 8738736628469323035}
   - {fileID: 7546380495200494537}
   - {fileID: 1686749835495081601}
   - {fileID: 441119090145193920}
@@ -2782,7 +2826,6 @@ MonoBehaviour:
   centerRayMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  player: {fileID: 0}
   skyDome: {fileID: 2446759269102002293}
   appSoundController: {fileID: 3401518824556605159}
   stickBgRect: {fileID: 7088581808884798768}
@@ -2796,6 +2839,7 @@ MonoBehaviour:
   phoneStickRect: {fileID: 7088581808884798768}
   pcKeyRect: {fileID: 2979070563131415520}
   sideMenu: {fileID: 340399970010139089}
+  htmlReceiver: {fileID: 8221723317341511766}
   CurrentLock:
     Move: 0
     Rotation: 0
@@ -3501,7 +3545,7 @@ RectTransform:
   - {fileID: 7088581808436383175}
   - {fileID: 6190877727912817821}
   m_Father: {fileID: 7088581808938128075}
-  m_RootOrder: 6
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}

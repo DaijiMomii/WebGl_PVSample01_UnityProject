@@ -177,7 +177,8 @@
             // };
               
             // 
-            unityInstance.SendMessage('AppGameManager', 'OnAppStarted' );
+            // unityInstance.SendMessage('AppGameManager', 'OnAppStarted' );
+            unityInstance.SendMessage('HtmlReceiver', 'OnHTML_AppStarted' );
             
             // initButton.onclick = () => 
             // {
@@ -193,8 +194,10 @@
                 console.log("Width:" + window.innerWidth);
                 console.log("Height:" + window.innerHeight);
 
-                unityInstance.SendMessage('AppGameManager', 'ResizeScreenWidth', window.innerWidth );
-                unityInstance.SendMessage('AppGameManager', 'ResizeScreenHeight', window.innerHeight );
+                // unityInstance.SendMessage('AppGameManager', 'ResizeScreenWidth', window.innerWidth );
+                // unityInstance.SendMessage('AppGameManager', 'ResizeScreenHeight', window.innerHeight );
+                unityInstance.SendMessage('HtmlReceiver', 'OnHTML_ResizeScreenWidth', window.innerWidth );
+                unityInstance.SendMessage('HtmlReceiver', 'OnHTML_ResizeScreenHeight', window.innerHeight );
               }
             );
 
@@ -203,7 +206,8 @@
             menuButton.onclick = () =>
             {
               // window.alert( "menu" );
-              unityInstance.SendMessage('AppGameManager', 'OnHtmlMenuButtonClicked' );
+              // unityInstance.SendMessage('AppGameManager', 'OnHtmlMenuButtonClicked' );
+              unityInstance.SendMessage('HtmlReceiver', 'OnHTML_MenuButtonClicked' );
             };
 
             soundButton.onclick = () =>
@@ -214,7 +218,8 @@
             muteButton.onclick = () =>
             {
               // window.alert( "mute" );
-              unityInstance.SendMessage('AppGameManager', 'OnHtmlMuteButtonClicked' );
+              // unityInstance.SendMessage('AppGameManager', 'OnHtmlMuteButtonClicked' );
+              unityInstance.SendMessage('HtmlReceiver', 'OnHTML_MuteButtonClicked' );
             };
 
 

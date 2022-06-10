@@ -63,7 +63,7 @@ public class WarpGate : MonoBehaviour
     {
         if( string.IsNullOrEmpty( linkUrl ) == false )
         {
-            AppGameManager.Instance.AccessUrl( linkUrl, isNewWindow );
+            AppGameManager.Instance.OpenWebPage( linkUrl, isNewWindow );
         }
         else
         {

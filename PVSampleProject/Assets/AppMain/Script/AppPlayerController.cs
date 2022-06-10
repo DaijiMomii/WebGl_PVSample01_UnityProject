@@ -51,7 +51,7 @@ public class AppPlayerController : MonoBehaviour
         }
     }
     // スマホ入力の値.
-    public Vector2? PhoneUiInput{ get; set; } = null;
+    // public Vector2? PhoneUiInput{ get; set; } = null;
 
     // 回転入力開始位置.
     Vector3? rotStartPos = null;
@@ -73,8 +73,14 @@ public class AppPlayerController : MonoBehaviour
         currentEulerRotationV = cameraRootV.localEulerAngles.x;
         AppGameManager.Instance.PresentationStartEvent.AddListener( SetPresentation );
         AppGameManager.Instance.PresentationEndEvent.AddListener( EndPresentation );
+        
         AppGameManager.Instance.SkyDomeControl.StartSkyDomeEvent.AddListener( OnSkyDomeStarted );
         AppGameManager.Instance.SkyDomeControl.FinishSkyDomeEvent.AddListener( OnSkyDomeFinished );
+
+        AppGameManager.Instance.UpdateEvent_ClickCameraRotation.AddListener( UpdateClickCameraRotation );
+        AppGameManager.Instance.UpdateEvent_TouchCameraRotation.AddListener( UpdateTouchCameraRotation );
+        AppGameManager.Instance.UpdateEvent_ResetCameraRotation.AddListener( ResetRotationValue );
+        AppGameManager.Instance.OpenWebPageEvent.AddListener( OnWebPageOpened );
 
         mainCamera = Camera.main;
     }
@@ -88,9 +94,9 @@ public class AppPlayerController : MonoBehaviour
         float _horizontal = 0;
         float _vertical = 0;
 
-        if( PhoneUiInput != null )
+        if( AppGameManager.Instance.PhoneUiInput != null )
         {
-            var _input = (Vector2)PhoneUiInput;
+            var _input = (Vector2)AppGameManager.Instance.PhoneUiInput;
             _horizontal = _input.x;
             _vertical = _input.y;
         }
@@ -287,6 +293,11 @@ public class AppPlayerController : MonoBehaviour
             _current.z *= 0.5f;
             Rigid.velocity = _current;
         }
+    }
+
+    void OnWebPageOpened()
+    {
+        StopPlayer();
     }
 
     // ---------------------------------------------------------------------
