@@ -55,6 +55,8 @@ public class AppSoundController : MonoBehaviour
     public class VideoInitEvent : UnityEvent<PvDistributedVideoPlayer>{}
     public VideoInitEvent InitEvent{ get; set; } = new VideoInitEvent();
 
+    public bool IsMute{ get; private set; } = true;
+
     bool isInit = true;
 
     // bool isMuteInitialize = false;
@@ -152,16 +154,16 @@ public class AppSoundController : MonoBehaviour
     }
 
 
-    public void OnHtmlInit( bool isMute = false )
+    public void OnHtmlInit( bool isInitMute = false )
     {
-        Debug.Log( "@@@@@@... HTMLのSoundInit" );  
+        if( isInit == true ) return;
 
         foreach( var video in Videos )
         {
             if( video.IsMuteVideo == true ) video.Video.SetDirectAudioMute( 0, true );  
             else video.Video.SetDirectAudioMute( 0, false );  
 
-            float _value = ( isMute == true ) ? 0 : 1f;
+            float _value = ( isInitMute == true ) ? 0 : 1f;
 
             video.Video.SetDirectAudioVolume( 0, _value );  
         }
@@ -171,14 +173,14 @@ public class AppSoundController : MonoBehaviour
             if( video.IsMute == true ) video.Video.SetDirectAudioMute( 0, true );  
             else video.Video.SetDirectAudioMute( 0, false );  
 
-            float _value = ( isMute == true ) ? 0 : 1f;
+            float _value = ( isInitMute == true ) ? 0 : 1f;
 
             video.Video.SetDirectAudioVolume( 0, _value );  
         }
 
         foreach( var audio in audioSources )
         {
-            float _value = ( isMute == true ) ? 0 : 1f;
+            float _value = ( isInitMute == true ) ? 0 : 1f;
             audio.Audio.volume = _value;            
             audio.Audio.mute = false;
 
@@ -188,6 +190,8 @@ public class AppSoundController : MonoBehaviour
                 audio.IsInit = true;
             }
         }
+
+        IsMute = isInitMute;
     }
 
     public void OnHtmlMuteOn()
@@ -226,6 +230,39 @@ public class AppSoundController : MonoBehaviour
             if( audio.Audio.mute == true ) audio.Audio.mute = false;
             audio.Audio.volume = 0;
         }
+
+
+        IsMute = true;
+    }
+
+    public void SetVolume( float value )
+    {
+        var _os = AppGameManager.Instance.Platform.OS;
+
+        if( value > 1 ) value = 1;
+        else if( value < 0 ) value = 0;
+
+        foreach( var video in Videos )
+        {
+            if( video.IsMuteVideo == true ) video.Video.SetDirectAudioMute( 0, true );
+            else video.Video.SetDirectAudioMute( 0, false );
+
+            video.Video.SetDirectAudioVolume( 0, value );  
+        }
+
+        foreach( var video in videoPlayers )
+        {
+            if( video.IsMute == true ) video.Video.SetDirectAudioMute( 0, true );
+            else video.Video.SetDirectAudioMute( 0, false );
+          
+            video.Video.SetDirectAudioVolume( 0, value );  
+        }
+
+        foreach( var audio in audioSources )
+        {
+            if( audio.Audio.mute == true ) audio.Audio.mute = false;
+            audio.Audio.volume = value;
+        }
     }
 
     public void OnHtmlMuteOff()
@@ -250,6 +287,47 @@ public class AppSoundController : MonoBehaviour
         {
             if( audio.Audio.mute == true ) audio.Audio.mute = false;
             audio.Audio.volume = 1;
+        }
+
+        IsMute = false;
+    }
+
+    public void AddAudioSource( AudioSource audio, bool playOnAwake )
+    {
+        var param = new AudioSourceParam();
+        param.Audio = audio;
+        param.IsPlayOnAwake = playOnAwake;
+        param.IsInit = true;
+
+        audioSources.Add( param );
+
+        if( playOnAwake == true )
+        {
+            audio.mute = IsMute;
+            audio.volume = ( IsMute == true ) ? 0 : 1;
+            audio.Play();
+        }
+    } 
+
+    public void AddVideoPlayer( VideoPlayer video, bool playOnAwake, bool mute )
+    {
+        var _param = new VideoPlayerParam();
+        _param.Video = video;
+        _param.IsPlayOnAwake = playOnAwake;
+        _param.IsMute = mute;
+        videoPlayers.Add( _param );
+
+        // 追加時にMuteじゃなくても次のユーザーアクションまではMuteじゃないとエラーになるかもなので.
+        if( mute == true ) video.SetDirectAudioMute( 0, true );  
+        else if ( IsMute == true ) video.SetDirectAudioMute( 0, true );  
+        // else video.SetDirectAudioMute( 0, false );  
+        video.SetDirectAudioVolume( 0, 1 );  
+
+        video.Play();
+        if( playOnAwake == false )
+        {
+            video.Pause();
+            video.frame = 2;
         }
     }
 

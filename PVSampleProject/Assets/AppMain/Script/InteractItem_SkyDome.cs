@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 using UnityEngine.UI;
+using UnityEngine.Video;
 
 public class InteractItem_SkyDome : InteractableItemBase
 {
@@ -13,6 +14,13 @@ public class InteractItem_SkyDome : InteractableItemBase
     [SerializeField] float transitionTime = 1.5f;
     [SerializeField] int skyDomeLayerNumber = 9;
 
+    [SerializeField] AudioSource audioSource = null;
+    // [SerializeField] bool isAudioPlayOnAwake = true;
+    [SerializeField] VideoPlayer video = null;
+    [SerializeField] string videoFileName = "mp4";
+
+
+
     int sphereDefaultLayerNumber = 0;
     Vector3 sphereDefaultScale = Vector3.one;
     Sequence seq = null;
@@ -22,6 +30,29 @@ public class InteractItem_SkyDome : InteractableItemBase
         sphereDefaultScale = sphere.localScale;
         sphereDefaultLayerNumber = sphere.gameObject.layer;
         closeButton.gameObject.SetActive( false );
+
+        AudioInit();
+        VideoInit();
+    }
+
+    void AudioInit()
+    {
+        if( audioSource == null ) return;
+        
+        if( audioSource.isPlaying == true ) audioSource.Stop();
+        audioSource.mute = true;
+        AppGameManager.Instance.SoundController.AddAudioSource( audioSource, true );
+    }
+
+    void VideoInit()
+    {
+        if( video == null ) return;
+
+        var _path = Application.streamingAssetsPath + "/Movie/" + videoFileName;
+        video.source = VideoSource.Url;
+        video.url = _path;
+        video.SetDirectAudioMute( 0, true );
+        AppGameManager.Instance.SoundController.AddVideoPlayer( video, true, true );
     }
 
     public override void OnClick()

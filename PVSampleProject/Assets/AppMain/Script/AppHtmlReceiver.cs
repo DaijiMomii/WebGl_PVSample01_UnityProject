@@ -56,6 +56,10 @@ public class AppHtmlReceiver : MonoBehaviour
     // 現在の画面サイズ.
     public Vector2 CurrentScreenSize{ get; set; } = Vector2.zero;
 
+    
+    public float SoundButtonHtmlPosition_Left{ get; private set; } = 0;
+    public float SoundButtonHtmlPosition_Top{ get; private set; } = 0;
+
     // プラットフォーム情報.
     public AppGameManager.DeviceParam Platform{ get; set; } = new AppGameManager.DeviceParam();
 
@@ -134,6 +138,18 @@ public class AppHtmlReceiver : MonoBehaviour
 
         AppGameManager.Instance.Debug_SetPlatformText( Platform + " / " + CurrentScreenSize );
     }
+
+
+    public void OnHTML_SoundButtonRectX( int x )
+    {
+        SoundButtonHtmlPosition_Left = (float)x;
+    }
+
+    public void OnHTML_SoundButtonRectY( int y )
+    {
+        SoundButtonHtmlPosition_Top = (float)y;
+    }
+
 
     // -------------------------------------------------------------------------------------
     /// <summary>
@@ -273,6 +289,26 @@ public class AppHtmlReceiver : MonoBehaviour
             gm.SetMoveUI( true );
 
             gm.ShowHeader();
+        }
+    }
+
+    // -------------------------------------------------------------------------------------
+    /// <summary>
+    /// HTMLサウンドボタンクリックコールバック.
+    /// </summary>
+    // -------------------------------------------------------------------------------------
+    public void OnHTML_SoundButtonClicked()
+    {
+        var gm = AppGameManager.Instance;
+
+        if( gm.SideMenu.IsVolumeWindowOpened == false )
+        {
+            AppGameManager.Instance.SideMenu.SetVolumeWindowPosition();
+            gm.SideMenu.OpenVolumeWindow();
+        }
+        else
+        {
+            gm.SideMenu.CloseVolumeWindow();
         }
     }
 

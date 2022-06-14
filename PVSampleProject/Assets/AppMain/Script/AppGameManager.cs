@@ -139,7 +139,12 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     public bool HtmlMenu_SoundIconDisplay{ get{ return htmlReceiver.HtmlMenu_SoundIconDisplay; } set{ htmlReceiver.HtmlMenu_SoundIconDisplay = value; } }
     public bool HtmlMenu_MuteIconDisplay{ get{ return htmlReceiver.HtmlMenu_MuteIconDisplay; } set{ htmlReceiver.HtmlMenu_MuteIconDisplay = value; } }
 
+    public float HtmlMenu_SoundButtonRect_Left{ get{  return htmlReceiver.SoundButtonHtmlPosition_Left; } }
+
+    public float HtmlMenu_SoundButtonRect_Top{ get{  return htmlReceiver.SoundButtonHtmlPosition_Top; } }
+
     public DeviceParam Platform{ get{ return htmlReceiver.Platform; } set{ htmlReceiver.Platform = value; } }
+
 
     // 現在のロック状態.
     public Lock CurrentLock = new Lock();
@@ -197,7 +202,7 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
     // 移動用のクリック開始位置.
     Vector3? startMoveMousePosition = null;
 
-    // Vector2 currentScreen = Vector2.zero;
+    public Vector2 CurrentScreen{ get{ return htmlReceiver.CurrentScreenSize; } }
 
 
     InteractableItemBase currentCursorRayHit = null;
