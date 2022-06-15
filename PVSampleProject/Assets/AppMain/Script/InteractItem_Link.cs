@@ -4,11 +4,13 @@ using UnityEngine;
 
 public class InteractItem_Link : InteractableItemBase
 {
-    [SerializeField] string url = "http://google.co.jp";
+    [SerializeField] string pageName = "";
+    [SerializeField] string url = "";
 
-    [SerializeField] GameObject popupPrefab = null;
-
-
+    [SerializeField] GameObject horizontalPopup = null;
+    [SerializeField] GameObject verticalPopup = null;
+ 
+    PopupBase currentPop = null;
 
     void Start()
     {
@@ -20,15 +22,19 @@ public class InteractItem_Link : InteractableItemBase
     {
         base.OnClick();
         Debug.Log( "リンク" );
-        OpenPopup();
+
+        if( string.IsNullOrEmpty( url ) == false )
+        {
+            OpenPopup();
+        }
     }
 
     void OpenPopup()
     {
         AppGameManager.Instance.AppStop();
-        // GameObject _prefab = ( Screen.width > Screen.height ) ? horizontalPopup : verticalPopup;
-        GameObject _prefab = popupPrefab;
-        AppGameManager.Instance.OpenPopup
+        GameObject _prefab = ( Screen.width > Screen.height ) ? horizontalPopup : verticalPopup;
+        // GameObject _prefab = popupPrefab;
+        currentPop = AppGameManager.Instance.OpenPopup
         ( 
             _prefab,
             null,
@@ -36,9 +42,7 @@ public class InteractItem_Link : InteractableItemBase
             {
                 AppGameManager.Instance.ClosePopup( pop );
                 AppGameManager.Instance.OpenStopWindow();
-                // base.ReturnPosition();
-                // base.Warp();
-                // currentPop = null;
+                currentPop = null;
 
                 Application.OpenURL( url );
             },
@@ -48,16 +52,17 @@ public class InteractItem_Link : InteractableItemBase
             pop => // 3:キャンセル。
             {
                 AppGameManager.Instance.ClosePopup( pop );
-                // base.ReturnPosition();
                 AppGameManager.Instance.AppRestart();
 
-                // currentPop = null;
+                currentPop = null;
             }
         );
 
-        // var _link = currentPop.gameObject.GetComponent<LinkGatePopup>();
-        // var _info = "oViceを利用した説明会の会場はこちらです。\n次回の説明会の日時は未定です。";
-        // _link.Init( _info );
+        var _link = currentPop.gameObject.GetComponent<LinkGatePopup>();
+        var _info = "";
+        if( string.IsNullOrEmpty( pageName ) == false ) _info = pageName + "\nをブラウザで開きます。";
+        else _info = url + "\nをブラウザで開きます。";
+        _link.Init( _info );
     }
 
 }

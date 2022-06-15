@@ -5,33 +5,39 @@ using UnityEngine.Video;
 using UnityEngine.UI;
 using UnityEngine.Events;
 
+// ---------------------------------------------------------------------------
+/// <summary>
+/// RawImageに動画表示.
+/// </summary>
+// ---------------------------------------------------------------------------
 public class MovieMonitor : MonoBehaviour
 {
+    // 動画ファイル名.
     [SerializeField] string fileName = "";
+    // RawImage.
     [SerializeField] RawImage raw = null;
 
+    // ビデオイベント定義クラス.
     [System.Serializable]
     public class VideoPlayEvent : UnityEvent<bool>{}
+    // 再生一時停止時イベント.
     public VideoPlayEvent OnPlayPause = new VideoPlayEvent();
 
+    // ファイル名.
     public string FileName{ get{ return fileName; } }
-
-    bool isPlayingOnPresentationStarted = true;
-
+    
+    // ビデオプレイヤー.
     PvDistributedVideoPlayer video = null;
 
     void Start()
     {
-        // AppGameManager.Instance.PresentationStartEvent.AddListener( OnPresentationStart );
-        // AppGameManager.Instance.PresentationEndEvent.AddListener( OnPresentationEnd );
-
         AppGameManager.Instance.AppSoundController.InitEvent.AddListener( OnVideoInitCompleted );
-
     }
 
     void Update()
     {
     }
+
 
     void OnVideoInitCompleted( PvDistributedVideoPlayer videoPlayer )
     {
@@ -53,14 +59,12 @@ public class MovieMonitor : MonoBehaviour
     {
     }
 
-    // protected virtual IEnumerator Restart( bool isPlay )
-    // {
-    //     yield return new WaitUntil( () => Video.texture != null );
-    //     Raw.texture = Video.texture;
-    //     if( isPlay == true ) Video.Play();
-    // }
-
-
+    // ---------------------------------------------------------------------------
+    /// <summary>
+    /// 動画のサイズ設定.
+    /// </summary>
+    /// <param name="isInit"></param>
+    // ---------------------------------------------------------------------------
     public void SetSize( bool isInit )
     {
         if( video == null || video.Video == null || video.Video.texture == null ) return;
@@ -90,7 +94,11 @@ public class MovieMonitor : MonoBehaviour
         raw.rectTransform.sizeDelta = _current;
     }
 
-
+    // ---------------------------------------------------------------------------
+    /// <summary>
+    /// 再生ボタンクリックコールバック.
+    /// </summary>
+    // ---------------------------------------------------------------------------
     public void OnPlayButtonClicked()
     {
         if( video != null && video.Video != null )

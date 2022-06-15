@@ -11,46 +11,7 @@ using System.IO;
 using UnityEngine.Networking;
 
 public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
-{
-    
-    // // プラグインインポート端末情報の取得.
-    // [DllImport("__Internal")]
-    // private static extern void DeviceInformation();
-    // [DllImport("__Internal")]
-    // private static extern void OSInformation();
-    // // プラグインインポートURLを開く.
-    // [DllImport("__Internal")]
-    // private static extern void OpenUrl( string url );
-    // [DllImport("__Internal")]
-    // private static extern void OpenUrlNewWindow( string url );
-
-    // [DllImport("__Internal")]
-    // private static extern void OpenHeader();
-    // [DllImport("__Internal")]
-    // private static extern void CloseHeader();
-
-    // // [DllImport("__Internal")]
-    // // private static extern void SetMenuState( string state );
-
-    // [DllImport("__Internal")]
-    // private static extern void SetMenuIconDisplay( bool isDisplay );
-
-    // [DllImport("__Internal")]
-    // private static extern void SetSoundIconDisplay( bool isDisplay );
-
-    // [DllImport("__Internal")]
-    // private static extern void SetMuteIconDisplay( bool isDisplay );
-
-    // [DllImport("__Internal")]
-    // private static extern void SetMute( bool isMute );
-    
-    
-    
-    
-
-    
-
-
+{ 
     // -------------------------------------------------------------------------------------
     /// <summary>
     /// マウスアクション.
@@ -768,14 +729,20 @@ public class AppGameManager : SingletonMonoBehaviour<AppGameManager>
         stopWindowTransition.TransitionIn();
     }
 
-    public void AppRestart()
+    public void AppRestart( bool showMoveUi = true )
     {
         CurrentLock.Click = false;
         CurrentLock.Look = false;
         CurrentLock.Move = false;
         CurrentLock.Rotation = false;
+
+        if( showMoveUi == true )
+        {
+            SetMoveUI( true );
+        }
     }
-    public void CloseStopWindow()
+
+    public void CloseStopWindow( bool releaseLock = true, bool showMoveUi = true )
     {
         stopWindowTransition.TransitionOut();
     }

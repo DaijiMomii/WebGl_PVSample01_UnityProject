@@ -2,22 +2,42 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// ---------------------------------------------------------------------------
+/// <summary>
+/// 選択可能オブジェクト、画像をPOPUP表示.
+/// </summary>
+// ---------------------------------------------------------------------------
 public class InteractItem_ShowImage : InteractableItemBase
 {
-    [SerializeField] UITransition imageTransition = null;
+    // ポップアッププレハブ.
+    
+    [SerializeField] GameObject horizontalPopup = null;
+    [SerializeField] GameObject verticalPopup = null;
+ 
+    // WebサイトのURL.
+    [SerializeField] string webSiteUrl = "";
+    // ポップアップに表示する文字情報.
+    [SerializeField, Multiline] string popupInformation = "";
+    // ポップアップに表示する画像.
+    [SerializeField] Sprite showSprite = null;
+
+    // ポップアップ.
+    PopupBase currentPop = null;
 
     void Start()
     {
         
     }
 
-
+    // ---------------------------------------------------------------------------
+    /// <summary>
+    /// クリックコールバック.
+    /// </summary>
+    // ---------------------------------------------------------------------------
     public override void OnClick()
     {
         base.OnClick();
         Debug.Log( "画像表示" );
-
-        imageTransition.TransitionIn();
 
         AppGameManager.Instance.CurrentLock.Move = true;
         AppGameManager.Instance.CurrentLock.Rotation = true;
@@ -25,18 +45,53 @@ public class InteractItem_ShowImage : InteractableItemBase
         AppGameManager.Instance.CurrentLock.Look = true;
 
         AppGameManager.Instance.SetMoveUI( false );
+
+        OpenPopup();
     }
 
-    public void OnCloseButtonClicked()
+    // ---------------------------------------------------------------------------
+    /// <summary>
+    /// ポップアップを開く.
+    /// </summary>
+    // ---------------------------------------------------------------------------
+    void OpenPopup()
     {
-        imageTransition.TransitionOut();
+        AppGameManager.Instance.AppStop();
+        GameObject _prefab = ( Screen.width > Screen.height ) ? horizontalPopup : verticalPopup;
+        // GameObject _prefab = popupPrefab;
+        currentPop = AppGameManager.Instance.OpenPopup
+        ( 
+            _prefab,
+            null,
+            pop => // Webサイトを開く.
+            {
+                AppGameManager.Instance.ClosePopup( pop );
+                AppGameManager.Instance.OpenStopWindow();
+                currentPop = null;
 
-        AppGameManager.Instance.CurrentLock.Move = false;
-        AppGameManager.Instance.CurrentLock.Rotation = false;
-        AppGameManager.Instance.CurrentLock.Click = false;
-        AppGameManager.Instance.CurrentLock.Look = false;
+                Application.OpenURL( webSiteUrl );
+            },
+            pop => 
+            {
+            },
+            pop => // 閉じる.
+            {
+                AppGameManager.Instance.ClosePopup( pop );
+                AppGameManager.Instance.AppRestart();
 
-        AppGameManager.Instance.SetMoveUI( true );
+                AppGameManager.Instance.CurrentLock.Move = false;
+                AppGameManager.Instance.CurrentLock.Rotation = false;
+                AppGameManager.Instance.CurrentLock.Click = false;
+                AppGameManager.Instance.CurrentLock.Look = false;
+
+                AppGameManager.Instance.SetMoveUI( true );
+
+                currentPop = null;
+            }
+        );
+
+        var _link = currentPop.gameObject.GetComponent<ShowImagePopup>();
+
+        _link.Init( popupInformation, showSprite );
     }
-
 }
